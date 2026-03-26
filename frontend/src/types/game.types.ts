@@ -1,3 +1,5 @@
+import type { PieceSymbol } from 'chess.js'
+
 // Cor do jogador — alinha com os valores esperados pelo react-chessboard
 export type PieceColor = 'white' | 'black'
 
@@ -19,12 +21,12 @@ export type GameMove = {
   to: string         // casa de destino, ex: 'e4'
   san: string        // notação algébrica padrão: 'e4', 'Nf3', 'O-O'
   fen: string        // FEN do tabuleiro APÓS esta jogada ser executada
-  piece: string      // tipo da peça: 'p' | 'n' | 'b' | 'r' | 'q' | 'k'
+  piece: PieceSymbol // tipo da peça: 'p' | 'n' | 'b' | 'r' | 'q' | 'k'
   color: PieceColor
   isCapture: boolean
   isCheck: boolean
   isCheckmate: boolean
-  promotion?: string // peça de promoção se houver: 'q' | 'r' | 'b' | 'n'
+  promotion?: PieceSymbol // peça de promoção se houver: 'q' | 'r' | 'b' | 'n'
 }
 
 export type GameStatus = 'playing' | 'won' | 'lost' | 'draw'
