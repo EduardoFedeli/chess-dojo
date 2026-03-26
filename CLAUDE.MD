@@ -1,69 +1,79 @@
-# chess-dojo
+# CLAUDE.md
 
-Aplicação web de xadrez com bots de diferentes níveis e um bot-professor
-com feedback via IA (Claude API).
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Stack
-- Frontend: Next.js 15, TypeScript, react-chessboard, chess.js, shadcn/ui
-- Backend:  Python, FastAPI, python-chess, Stockfish
-- IA:       Claude API (claude-sonnet-4-20250514)
-- Storage:  localStorage (sem banco de dados no MVP)
-- Deploy:   Vercel (frontend) + Railway (backend)
+## Arquitetura
 
-## Como rodar
+Aplicação 100% client-side de xadrez contra bots powered by Stockfish WebAssembly. Sem backend.
 
-### Frontend
+- **Stack:** Next.js 16 (App Router), TypeScript strict, React 19
+- **Xadrez:** chess.js (lógica) + react-chessboard (UI) + stockfish (engine WASM, roda no navegador)
+- **UI:** shadcn/ui + Tailwind CSS v4 + radix-ui + lucide-react
+- **Storage:** localStorage
+- **Deploy:** Vercel
+
+## Comandos
+
+Todo trabalho é dentro de `frontend/`:
+
+```bash
 cd frontend
 npm install
-cp .env.local.example .env.local   # preencher BACKEND_URL
-npm run dev                         # http://localhost:3000
+npm run dev      # http://localhost:3000
+npm run build    # verificar erros de build
+npm run lint     # ESLint
+```
 
-### Backend
-cd backend
-pip install -r requirements.txt
-cp .env.example .env               # preencher ANTHROPIC_API_KEY
-uvicorn app.main:app --reload      # http://localhost:8000
+Não há backend, não há testes automatizados configurados no momento.
 
 ## Estrutura de pastas
-src/components → componentes React reutilizáveis
-src/app        → rotas Next.js (App Router)
-src/services   → chamadas ao backend e localStorage
-src/hooks      → custom hooks (useGame, useStats, useLocalStorage)
-src/types      → tipagens TypeScript
-src/utils      → funções utilitárias (pgn-parser, move-classifier)
+
+```
+frontend/
+  app/           → rotas Next.js App Router (layout.tsx, page.tsx, globals.css)
+  src/           → será criado conforme o projeto cresce:
+    components/  → componentes React (PascalCase: ChessBoard.tsx, BotCard.tsx)
+    hooks/       → custom hooks (useGame, useStats, useLocalStorage)
+    services/    → storage.service.ts (NÃO modificar sem instrução explícita)
+    types/       → tipagens TypeScript
+    utils/       → funções puras (kebab-case: pgn-parser.ts, move-classifier.ts)
+```
+
+> Atenção: o diretório `src/` ainda não existe — o projeto está no início. Criar conforme necessidade.
+
+## Bots
+
+Três níveis via Stockfish skill level:
+- Iniciante: skill level 2
+- Guerreiro: skill level 10
+- Mestre: skill level 20
 
 ## Convenções
-- Componentes em PascalCase: ChessBoard.tsx, BotCard.tsx
-- Funções e variáveis em camelCase: getBotMove(), playerColor
-- Arquivos utilitários em kebab-case: pgn-parser.ts
-- TypeScript strict: sempre
-- Prettier antes de qualquer commit: sempre
+
+- Componentes: PascalCase
+- Funções/variáveis: camelCase
+- Arquivos utilitários: kebab-case
+- TypeScript strict sempre
+- Rodar Prettier antes de qualquer commit
 
 ## Padrão de commits
+
+```
 feat(escopo): descrição
 fix(escopo): descrição
 docs(escopo): descrição
 chore(escopo): descrição
-
-## Com Claude Code
-- Iniciar sessão sempre com /init
-- Referenciar arquivos com @src/components/board/ChessBoard.tsx
-- Usar /compact quando a sessão estiver longa
-- Um objetivo claro por sessão
+```
 
 ## O que NÃO mexer sem instrução explícita
-- app/api/engine/route.ts (proxy de segurança)
-- services/storage.service.ts (risco de perda de dados do usuário)
 
-## Contexto
-Desenvolvedor em transição para full stack.
-Priorizar clareza e boas práticas acima de performance prematura.
-Sempre explicar o porquê das decisões antes do como.
-```
+- `frontend/src/services/storage.service.ts` — risco de perda de dados do usuário
+- `frontend/.env.local`
 
----
+## Aviso sobre Next.js
 
-## Dois endpoints do backend — só isso no MVP
-```
-POST /move        → recebe FEN + botLevel, retorna a jogada do bot
-POST /analyze     → recebe PGN completo, retorna análise completa + resumo do Professor
+Este projeto usa Next.js 16 com React 19 — versões com breaking changes em relação ao que pode estar no training data. Consultar `node_modules/next/dist/docs/` em caso de dúvida sobre APIs ou convenções.
+
+## Contexto do desenvolvedor
+
+Desenvolvedor em transição para full stack. Priorizar clareza e boas práticas acima de performance prematura. Sempre explicar o porquê das decisões antes do como.
