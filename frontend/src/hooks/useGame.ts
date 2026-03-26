@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Chess } from 'chess.js'
 import type { GameMove, GameStatus, PieceColor } from '@/types/game.types'
 
@@ -19,53 +19,52 @@ export function useGame(playerColor: PieceColor): UseGameReturn {
   const [moves, setMoves] = useState<GameMove[]>([])
   const [status, setStatus] = useState<GameStatus>('playing')
 
-  function makeMove(
-    from: string,
-    to: string,
-    promotion?: string
-  ): GameMove | null {
-    const chess = chessRef.current
+  const makeMove = useCallback(
+    (from: string, to: string, promotion?: string): GameMove | null => {
+      const chess = chessRef.current
 
-    // chess.move() retorna null para jogadas ilegais sem lançar exceção
-    // quando usamos { strict: false } (padrão do chess.js v1+)
-    let result
-    try {
-      result = chess.move({ from, to, promotion: promotion ?? 'q' })
-    } catch {
-      // chess.js lança erro em algumas versões para jogadas ilegais
-      return null
-    }
+      // chess.js 1.x lança exceção para jogadas ilegais — o try/catch é a guarda correta.
+      // O promotion padrão 'q' (rainha) funciona para movimentos normais e é ignorado
+      // pelo chess.js em peças que não são peões. Promoção via UI será implementada depois.
+      let result
+      try {
+        result = chess.move({ from, to, promotion: promotion ?? 'q' })
+      } catch {
+        return null
+      }
 
-    if (!result) return null
+      if (!result) return null
 
-    const gameMove: GameMove = {
-      from: result.from,
-      to: result.to,
-      san: result.san,
-      fen: chess.fen(), // FEN capturado APÓS a jogada
-      piece: result.piece,
-      color: result.color === 'w' ? 'white' : 'black',
-      isCapture: result.captured !== undefined,
-      isCheck: chess.inCheck(),
-      isCheckmate: chess.isCheckmate(),
-      promotion: result.promotion,
-    }
+      const gameMove: GameMove = {
+        from: result.from,
+        to: result.to,
+        san: result.san,
+        fen: chess.fen(), // FEN capturado APÓS a jogada
+        piece: result.piece,
+        color: result.color === 'w' ? 'white' : 'black',
+        isCapture: result.captured !== undefined,
+        isCheck: chess.inCheck(),
+        isCheckmate: chess.isCheckmate(),
+        promotion: result.promotion,
+      }
 
-    // Forma funcional evita stale closure: garante que sempre acumulamos
-    // sobre o estado mais recente, mesmo que makeMove seja chamado rapidamente.
-    setMoves(prev => [...prev, gameMove])
-    setFen(chess.fen())
-    setStatus(deriveStatus(chess, playerColor))
+      // Forma funcional evita stale closure: garante que sempre acumulamos
+      // sobre o estado mais recente, mesmo que makeMove seja chamado rapidamente.
+      setMoves(prev => [...prev, gameMove])
+      setFen(chess.fen())
+      setStatus(deriveStatus(chess, playerColor))
 
-    return gameMove
-  }
+      return gameMove
+    },
+    [playerColor]
+  )
 
-  function reset() {
+  const reset = useCallback(() => {
     chessRef.current = new Chess()
     setFen(chessRef.current.fen())
     setMoves([])
     setStatus('playing')
-  }
+  }, [])
 
   return { fen, moves, status, makeMove, reset }
 }
@@ -76,6 +75,7 @@ function deriveStatus(chess: Chess, playerColor: PieceColor): GameStatus {
   if (chess.isDraw()) return 'draw'
 
   // isCheckmate() = true significa que o lado que VAI jogar perdeu
+  // chess.turn() retorna a cor que está para jogar — esse lado está em xeque-mate
   const loserColor = chess.turn() === 'w' ? 'white' : 'black'
   if (loserColor === playerColor) return 'lost'
   return 'won'
