@@ -1,0 +1,24 @@
+# na pasta chess-dojo/
+touch .gitignore
+```
+
+Abre o arquivo e cola isso:
+```
+# dependências
+node_modules/
+__pycache__/
+*.pyc
+
+# variáveis de ambiente (NUNCA subir para o GitHub)
+.env
+.env.local
+.env.production
+
+# build
+.next/
+dist/
+out/
+
+# sistema operacional
+.DS_Store
+Thumbs.db
