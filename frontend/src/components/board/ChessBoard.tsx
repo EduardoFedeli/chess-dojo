@@ -33,6 +33,8 @@ export function ChessBoard({
   }: PieceDropHandlerArgs): boolean {
     if (disabled || !targetSquare) return false
 
+    // Promoção: useGame.makeMove padrão é rainha quando nenhum argumento é passado.
+    // UI de seleção de peça será implementada em iteração futura.
     const move = makeMove(sourceSquare, targetSquare)
     if (!move) return false
 
