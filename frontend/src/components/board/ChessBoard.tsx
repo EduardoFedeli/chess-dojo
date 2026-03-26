@@ -4,6 +4,7 @@
 // e não é compatível com Server Components.
 
 import { Chessboard } from 'react-chessboard'
+import type { PieceDropHandlerArgs } from 'react-chessboard'
 import type { GameMove, PieceColor } from '@/types/game.types'
 
 type ChessBoardProps = {
@@ -22,16 +23,14 @@ export function ChessBoard({
   onMove,
   disabled = false,
 }: ChessBoardProps) {
-  // onPieceDrop é o handler principal do react-chessboard.
-  // Retornar false reverte a peça à posição original (jogada ilegal).
-  // Retornar true confirma a jogada e atualiza o tabuleiro.
+  // react-chessboard v5 passa { piece, sourceSquare, targetSquare } ao handler.
+  // targetSquare é null quando a peça é solta fora do tabuleiro.
+  // Retornar false reverte a peça à posição original.
+  // Retornar true confirma a jogada.
   function handlePieceDrop({
     sourceSquare,
     targetSquare,
-  }: {
-    sourceSquare: string
-    targetSquare: string | null
-  }): boolean {
+  }: PieceDropHandlerArgs): boolean {
     if (disabled || !targetSquare) return false
 
     const move = makeMove(sourceSquare, targetSquare)
@@ -41,6 +40,7 @@ export function ChessBoard({
     return true
   }
 
+  // react-chessboard v5 recebe todas as opções num único prop `options`
   return (
     <Chessboard
       options={{
