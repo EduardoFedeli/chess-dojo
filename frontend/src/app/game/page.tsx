@@ -12,6 +12,7 @@ import { ChessBoard } from '@/components/board/ChessBoard'
 import type { BoardTheme } from '@/components/board/ChessBoard'
 import { Button } from '@/components/ui/button'
 import type { BotLevel, GameStatus, PieceColor } from '@/types/game.types'
+import { MoveHistory } from '@/components/game/MoveHistory'
 
 // Gera um "thud" curto via Web Audio API — sem arquivos externos.
 // Usa um oscilador de baixa frequência com queda rápida de amplitude.
@@ -84,7 +85,7 @@ function GameContent() {
 
   const skillLevel = SKILL_LEVEL[botParam] ?? 2
 
-  const { fen, makeMove, status, resign } = useGame(colorParam)
+  const { fen, makeMove, status, resign, moves } = useGame(colorParam)
   const [resignConfirm, setResignConfirm] = useState(false)
 
   const [activeTheme, setActiveTheme] = useState<string>('classico')
@@ -112,67 +113,75 @@ function GameContent() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center p-8">
-      <div className="w-full max-w-[560px] flex flex-col gap-4">
-        <ChessBoard
-          fen={fen}
-          playerColor={colorParam}
-          makeMove={makeMove}
-          onMove={(move) => { if (move.isCapture) playCaptureSound() }}
-          disabled={isBotThinking || isGameOver}
-          theme={BOARD_THEMES[activeTheme].theme}
-        />
+      {/* Wrapper: coluna única em mobile, duas colunas em desktop */}
+      <div className="flex w-full max-w-[740px] flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
 
-        {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
-        <div className="flex items-center justify-between">
+        {/* Coluna esquerda: tabuleiro + controles */}
+        <div className="flex flex-col gap-4" style={{ maxWidth: 560 }}>
+          <ChessBoard
+            fen={fen}
+            playerColor={colorParam}
+            makeMove={makeMove}
+            onMove={(move) => { if (move.isCapture) playCaptureSound() }}
+            disabled={isBotThinking || isGameOver}
+            theme={BOARD_THEMES[activeTheme].theme}
+          />
 
-          {/* Seletor de tema: 3 botões com preview de dois quadrados */}
-          <div className="flex gap-2">
-            {Object.entries(BOARD_THEMES).map(([key, { label, theme }]) => {
-              const isActive = activeTheme === key
-              return (
+          {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2">
+              {Object.entries(BOARD_THEMES).map(([key, { label, theme }]) => {
+                const isActive = activeTheme === key
+                return (
+                  <button
+                    key={key}
+                    title={label}
+                    onClick={() => handleThemeChange(key)}
+                    className={[
+                      'flex overflow-hidden rounded-md border-2 transition-colors',
+                      isActive ? 'border-white' : 'border-transparent hover:border-neutral-500',
+                    ].join(' ')}
+                  >
+                    <span className="block h-5 w-5" style={theme.lightSquareStyle} />
+                    <span className="block h-5 w-5" style={theme.darkSquareStyle} />
+                  </button>
+                )
+              })}
+            </div>
+
+            {!isGameOver && (
+              resignConfirm ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-neutral-400">Tem certeza?</span>
+                  <button
+                    onClick={() => { resign(); setResignConfirm(false) }}
+                    className="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+                  >
+                    Sim
+                  </button>
+                  <button
+                    onClick={() => setResignConfirm(false)}
+                    className="rounded-lg border border-neutral-600 px-4 py-2 text-sm font-semibold text-neutral-300 hover:border-neutral-400 hover:text-white"
+                  >
+                    Não
+                  </button>
+                </div>
+              ) : (
                 <button
-                  key={key}
-                  title={label}
-                  onClick={() => handleThemeChange(key)}
-                  className={[
-                    'flex overflow-hidden rounded-md border-2 transition-colors',
-                    isActive ? 'border-white' : 'border-transparent hover:border-neutral-500',
-                  ].join(' ')}
+                  onClick={() => setResignConfirm(true)}
+                  className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:border-red-700 hover:text-red-400 transition-colors"
                 >
-                  <span className="block h-5 w-5" style={theme.lightSquareStyle} />
-                  <span className="block h-5 w-5" style={theme.darkSquareStyle} />
+                  Desistir
                 </button>
               )
-            })}
+            )}
           </div>
+        </div>
 
-          {/* Botão de desistir — só visível durante a partida */}
-          {!isGameOver && (
-            resignConfirm ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-neutral-400">Tem certeza?</span>
-                <button
-                  onClick={() => { resign(); setResignConfirm(false) }}
-                  className="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
-                >
-                  Sim
-                </button>
-                <button
-                  onClick={() => setResignConfirm(false)}
-                  className="rounded-lg border border-neutral-600 px-4 py-2 text-sm font-semibold text-neutral-300 hover:border-neutral-400 hover:text-white"
-                >
-                  Não
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setResignConfirm(true)}
-                className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:border-red-700 hover:text-red-400 transition-colors"
-              >
-                Desistir
-              </button>
-            )
-          )}
+        {/* Coluna direita: painel de histórico */}
+        {/* Desktop: ao lado do tabuleiro. Mobile: abaixo (ordem natural do flex-col) */}
+        <div className="sm:sticky sm:top-8">
+          <MoveHistory moves={moves} />
         </div>
       </div>
 
