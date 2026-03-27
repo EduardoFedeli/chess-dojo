@@ -158,18 +158,20 @@ function GameContent() {
   return (
     <main className="relative flex min-h-screen items-center justify-center p-8">
       {/* Wrapper: coluna única em mobile, duas colunas em desktop */}
-      <div className="flex w-full max-w-[740px] flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6">
+      <div className="flex w-full max-w-[740px] flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
 
         {/* Coluna esquerda: tabuleiro + controles */}
-        <div className="flex flex-col gap-4" style={{ maxWidth: 560 }}>
-          <ChessBoard
-            fen={fen}
-            playerColor={colorParam}
-            makeMove={makeMove}
-            onMove={(move) => { if (move.isCapture) playCaptureSound() }}
-            disabled={isBotThinking || isGameOver}
-            theme={BOARD_THEMES[activeTheme].theme}
-          />
+        <div className="flex flex-col gap-4" style={{ width: 500, flexShrink: 0 }}>
+          <div style={{ width: 500, height: 500 }}>
+            <ChessBoard
+              fen={fen}
+              playerColor={colorParam}
+              makeMove={makeMove}
+              onMove={(move) => { if (move.isCapture) playCaptureSound() }}
+              disabled={isBotThinking || isGameOver}
+              theme={BOARD_THEMES[activeTheme].theme}
+            />
+          </div>
 
           {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
           <div className="flex items-center justify-between">
@@ -222,9 +224,8 @@ function GameContent() {
           </div>
         </div>
 
-        {/* Coluna direita: painel de histórico */}
-        {/* Desktop: ao lado do tabuleiro, mesma altura. Mobile: abaixo (flex-col). */}
-        <div className="sm:flex sm:flex-col">
+        {/* Coluna direita: painel de histórico — altura igual ao tabuleiro, scroll interno */}
+        <div className="sm:flex sm:flex-col" style={{ height: 500 }}>
           <MoveHistory moves={moves} />
         </div>
       </div>
