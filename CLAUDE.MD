@@ -29,17 +29,32 @@ Não há backend, não há testes automatizados configurados no momento.
 ## Estrutura de pastas
 
 ```
-frontend/
-  app/           → rotas Next.js App Router (layout.tsx, page.tsx, globals.css)
-  src/           → será criado conforme o projeto cresce:
-    components/  → componentes React (PascalCase: ChessBoard.tsx, BotCard.tsx)
-    hooks/       → custom hooks (useGame, useStats, useLocalStorage)
-    services/    → storage.service.ts (NÃO modificar sem instrução explícita)
-    types/       → tipagens TypeScript
-    utils/       → funções puras (kebab-case: pgn-parser.ts, move-classifier.ts)
+frontend/src/
+  app/
+    layout.tsx, page.tsx, globals.css  → raiz da app
+    game/page.tsx                      → rota /game (tabuleiro interativo)
+  components/
+    ui/           → componentes shadcn/ui (PascalCase)
+    board/        → ChessBoard.tsx (display-only, não importa chess.js)
+  hooks/
+    useGame.ts    → estado da partida (única importação de chess.js)
+  lib/
+    utils.ts      → cn() para Tailwind
+  types/
+    game.types.ts → PieceColor, BotLevel, Bot, GameMove, GameStatus, Game
+  services/       → storage.service.ts (NÃO modificar sem instrução explícita) — criar conforme necessidade
+  utils/          → funções puras (kebab-case: pgn-parser.ts) — criar conforme necessidade
 ```
 
-> Atenção: o diretório `src/` ainda não existe — o projeto está no início. Criar conforme necessidade.
+Path alias `@/*` aponta para `frontend/src/` (ex: `@/hooks/useGame`, `@/components/board/ChessBoard`).
+
+## react-chessboard v5
+
+Esta versão tem API diferente da v4. O componente recebe todas as opções num único prop `options`:
+```tsx
+<Chessboard options={{ position, boardOrientation, onPieceDrop, allowDragging }} />
+```
+`onPieceDrop` recebe `{ piece, sourceSquare, targetSquare: string | null }` — não `(from, to)` como na v4.
 
 ## Bots
 
@@ -67,7 +82,7 @@ chore(escopo): descrição
 
 ## O que NÃO mexer sem instrução explícita
 
-- `frontend/src/services/storage.service.ts` — risco de perda de dados do usuário
+- `frontend/services/storage.service.ts` — risco de perda de dados do usuário
 - `frontend/.env.local`
 
 ## Aviso sobre Next.js
