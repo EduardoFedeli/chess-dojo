@@ -4,17 +4,18 @@
 // Em Next.js App Router, hooks do React só funcionam em Client Components.
 
 import { useGame } from '@/hooks/useGame'
+import { useStockfish } from '@/hooks/useStockfish'
 import { ChessBoard } from '@/components/board/ChessBoard'
-import type { GameMove } from '@/types/game.types'
 
 export default function GamePage() {
   const { fen, makeMove, status } = useGame('white')
 
-  // Placeholder: aqui o bot responderá à jogada do jogador na próxima iteração.
-  function handleMove(move: GameMove) {
-    console.log('Jogada registrada:', move.san, '| FEN:', move.fen)
-    console.log('Status:', status)
-  }
+  const { isBotThinking } = useStockfish({
+    skillLevel: 2,
+    fen,
+    makeMove,
+    enabled: status === 'playing',
+  })
 
   return (
     <main className="flex min-h-screen items-center justify-center p-8">
@@ -23,8 +24,8 @@ export default function GamePage() {
           fen={fen}
           playerColor="white"
           makeMove={makeMove}
-          onMove={handleMove}
-          disabled={status !== 'playing'}
+          onMove={() => {}}
+          disabled={isBotThinking || status !== 'playing'}
         />
       </div>
     </main>
