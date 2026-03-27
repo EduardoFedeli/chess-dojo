@@ -49,8 +49,15 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* Paleta do projeto */
+  --brand-bg:      #000000;
+  --brand-text:    #FFFBFC;
+  --brand-green:   #6B8F71;
+  --brand-brown:   #813405;
+  --brand-orange:  #EE964B;
+
+  --background: #000000;
+  --foreground: #FFFBFC;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);

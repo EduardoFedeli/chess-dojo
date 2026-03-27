@@ -2,19 +2,25 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import type { Bot, BotLevel, PieceColor } from '@/types/game.types'
 
 const BOTS: Bot[] = [
-  { id: 'iniciante', name: 'Iniciante', level: 'iniciante', skillLevel: 2,  description: 'Perfeito para aprender',   },
-  { id: 'guerreiro', name: 'Guerreiro', level: 'guerreiro', skillLevel: 10, description: 'Um desafio de verdade',    },
-  { id: 'mestre',    name: 'Mestre',    level: 'mestre',    skillLevel: 20, description: 'Sem piedade',              },
+  { id: 'iniciante', name: 'Iniciante', level: 'iniciante', skillLevel: 2,  description: 'Perfeito para aprender'  },
+  { id: 'guerreiro', name: 'Guerreiro', level: 'guerreiro', skillLevel: 10, description: 'Um desafio de verdade'   },
+  { id: 'mestre',    name: 'Mestre',    level: 'mestre',    skillLevel: 20, description: 'Sem piedade'             },
 ]
 
 const BOT_EMOJI: Record<BotLevel, string> = {
   iniciante: '🐣',
   guerreiro: '⚔️',
   mestre:    '🏆',
+}
+
+// Cor da borda de destaque por bot — usa a paleta do projeto
+const BOT_ACCENT: Record<BotLevel, string> = {
+  iniciante: '#6B8F71',  // verde
+  guerreiro: '#EE964B',  // laranja
+  mestre:    '#813405',  // marrom
 }
 
 export default function Home() {
@@ -28,32 +34,50 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-12 bg-neutral-950 px-6 py-16">
-
+    <main
+      className="flex min-h-screen flex-col items-center justify-center gap-14 px-6 py-16"
+      style={{ backgroundColor: 'var(--brand-bg)', color: 'var(--brand-text)' }}
+    >
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-white">♟ Chess Dojo</h1>
-        <p className="mt-2 text-neutral-400">Escolha seu adversário</p>
+        <h1
+          className="text-5xl font-black tracking-tight"
+          style={{ color: 'var(--brand-text)' }}
+        >
+          ♟ Chess Dojo
+        </h1>
+        <p className="mt-3 text-base" style={{ color: '#9ca3af' }}>
+          Escolha seu adversário e jogue
+        </p>
       </div>
 
       {/* Bot cards */}
       <div className="flex flex-col gap-4 sm:flex-row">
         {BOTS.map((bot) => {
           const isSelected = selectedBot === bot.level
+          const accent = BOT_ACCENT[bot.level]
           return (
             <button
               key={bot.id}
               onClick={() => setSelectedBot(bot.level)}
-              className={[
-                'flex w-52 flex-col items-center gap-2 rounded-2xl border-2 px-6 py-8 text-center transition-all',
-                isSelected
-                  ? 'border-white bg-neutral-800 text-white'
-                  : 'border-neutral-700 bg-neutral-900 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800',
-              ].join(' ')}
+              style={{
+                borderColor: isSelected ? accent : 'transparent',
+                boxShadow: isSelected ? `0 0 0 1px ${accent}, 0 0 20px ${accent}33` : undefined,
+                backgroundColor: isSelected ? `${accent}18` : '#111111',
+                outline: 'none',
+              }}
+              className="flex w-52 flex-col items-center gap-2 rounded-2xl border-2 px-6 py-8 text-center transition-all hover:border-neutral-600"
             >
               <span className="text-4xl">{BOT_EMOJI[bot.level]}</span>
-              <span className="text-lg font-semibold">{bot.name}</span>
-              <span className="text-sm text-neutral-400">{bot.description}</span>
+              <span
+                className="text-lg font-bold tracking-wide"
+                style={{ color: isSelected ? accent : 'var(--brand-text)' }}
+              >
+                {bot.name}
+              </span>
+              <span className="text-sm" style={{ color: '#9ca3af' }}>
+                {bot.description}
+              </span>
             </button>
           )
         })}
@@ -61,7 +85,7 @@ export default function Home() {
 
       {/* Color picker */}
       <div className="flex flex-col items-center gap-3">
-        <p className="text-sm text-neutral-400">Jogar de:</p>
+        <p className="text-sm" style={{ color: '#9ca3af' }}>Jogar de:</p>
         <div className="flex gap-3">
           {(['white', 'black'] as PieceColor[]).map((color) => {
             const isSelected = selectedColor === color
@@ -69,12 +93,13 @@ export default function Home() {
               <button
                 key={color}
                 onClick={() => setSelectedColor(color)}
-                className={[
-                  'flex items-center gap-2 rounded-xl border-2 px-6 py-3 text-sm font-medium transition-all',
-                  isSelected
-                    ? 'border-white bg-neutral-800 text-white'
-                    : 'border-neutral-700 bg-neutral-900 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800',
-                ].join(' ')}
+                style={{
+                  borderColor: isSelected ? 'var(--brand-green)' : '#374151',
+                  backgroundColor: isSelected ? '#6B8F7122' : '#111111',
+                  color: isSelected ? 'var(--brand-green)' : '#d1d5db',
+                  outline: 'none',
+                }}
+                className="flex items-center gap-2 rounded-xl border-2 px-6 py-3 text-sm font-semibold transition-all hover:border-neutral-500"
               >
                 <span className="text-xl">{color === 'white' ? '♔' : '♚'}</span>
                 {color === 'white' ? 'Brancas' : 'Pretas'}
@@ -85,14 +110,18 @@ export default function Home() {
       </div>
 
       {/* CTA */}
-      <Button
+      <button
         onClick={handlePlay}
         disabled={!selectedBot || !selectedColor}
-        className="w-40 rounded-xl bg-white py-6 text-base font-semibold text-black hover:bg-neutral-200 disabled:opacity-30"
+        style={{
+          backgroundColor: selectedBot && selectedColor ? 'var(--brand-orange)' : '#1f1f1f',
+          color: selectedBot && selectedColor ? '#000' : '#4b5563',
+          cursor: selectedBot && selectedColor ? 'pointer' : 'not-allowed',
+        }}
+        className="w-44 rounded-xl py-4 text-base font-black tracking-wide transition-all hover:opacity-90 disabled:opacity-40"
       >
         Jogar →
-      </Button>
-
+      </button>
     </main>
   )
 }
