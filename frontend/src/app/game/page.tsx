@@ -11,6 +11,29 @@ import { useStockfish } from '@/hooks/useStockfish'
 import { ChessBoard } from '@/components/board/ChessBoard'
 import type { BotLevel, PieceColor } from '@/types/game.types'
 
+// Gera um "thud" curto via Web Audio API — sem arquivos externos.
+// Usa um oscilador de baixa frequência com queda rápida de amplitude.
+function playCaptureSound() {
+  if (typeof window === 'undefined') return
+  const ctx = new AudioContext()
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+
+  osc.connect(gain)
+  gain.connect(ctx.destination)
+
+  osc.type = 'sine'
+  osc.frequency.setValueAtTime(120, ctx.currentTime)
+  osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.12)
+
+  gain.gain.setValueAtTime(0.6, ctx.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
+
+  osc.start(ctx.currentTime)
+  osc.stop(ctx.currentTime + 0.15)
+  osc.onended = () => ctx.close()
+}
+
 const SKILL_LEVEL: Record<BotLevel, number> = {
   iniciante: 2,
   guerreiro: 10,
@@ -42,7 +65,7 @@ function GameContent() {
           fen={fen}
           playerColor={colorParam}
           makeMove={makeMove}
-          onMove={() => {}}
+          onMove={(move) => { if (move.isCapture) playCaptureSound() }}
           disabled={isBotThinking || status !== 'playing'}
         />
       </div>
