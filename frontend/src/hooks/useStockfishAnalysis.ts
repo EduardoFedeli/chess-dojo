@@ -60,13 +60,21 @@ export function useStockfishAnalysis({
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [triggered,   setTriggered]   = useState(false)
 
-  const analyzeNext = useCallback(() => {
-    const worker = workerRef.current
-    if (!worker || indexRef.current >= fens.length) return
+  // Ref mantida em sincronia com o prop fens durante cada render.
+  // Permite que o onmessage do worker (closure estática) leia sempre a lista
+  // de FENs mais recente, sem precisar recriar o handler.
+  const fensRef = useRef<string[]>(fens)
+  fensRef.current = fens
 
-    const fen       = fens[indexRef.current]
-    const isWhite   = fen.split(' ')[1] === 'w'
-    // Guardamos para uso no handler de mensagem
+  // analyzeNextRef: atualizado a cada render para que o onmessage do worker
+  // chame a versão mais recente (com depth/movetime atuais) sem recriar o handler.
+  const analyzeNextRef = useRef<() => void>(() => {})
+  analyzeNextRef.current = () => {
+    const worker = workerRef.current
+    if (!worker || indexRef.current >= fensRef.current.length) return
+
+    const fen     = fensRef.current[indexRef.current]
+    const isWhite = fen.split(' ')[1] === 'w'
     ;(worker as Worker & { __whiteToMove?: boolean }).__whiteToMove = isWhite
 
     worker.postMessage(`position fen ${fen}`)
@@ -75,7 +83,7 @@ export function useStockfishAnalysis({
     } else {
       worker.postMessage(`go movetime ${movetime}`)
     }
-  }, [fens, depth, movetime])
+  }
 
   const startAnalysis = useCallback(() => {
     setTriggered(true)
@@ -110,21 +118,22 @@ export function useStockfishAnalysis({
         const score = lastScoreRef.current
         scoresRef.current.push(score)
 
-        const newScores  = [...scoresRef.current]
-        const newProgress = newScores.length / fens.length
+        const newScores = [...scoresRef.current]
+        const total     = fensRef.current.length // sempre o valor mais recente via ref
         setScores(newScores)
-        setProgress(newProgress)
+        setProgress(total > 0 ? newScores.length / total : 0)
 
         indexRef.current += 1
 
-        if (indexRef.current >= fens.length) {
-          // Análise concluída
+        if (indexRef.current >= total) {
+          // Análise concluída — reseta triggered para evitar loop de reinício
           setIsAnalyzing(false)
+          setTriggered(false)
           return
         }
 
-        // Avança para o próximo FEN
-        analyzeNext()
+        // Avança para o próximo FEN via ref (sem stale closure)
+        analyzeNextRef.current()
       }
     }
 
@@ -138,11 +147,9 @@ export function useStockfishAnalysis({
 
   // Dispara análise quando enabled e triggered
   useEffect(() => {
-    if (!enabled || !triggered || isAnalyzing || fens.length === 0) return
-    if (!isReadyRef.current) {
-      // isReady state change will re-trigger this effect when worker is ready
-      return
-    }
+    if (!enabled || !triggered || isAnalyzing) return
+    if (fensRef.current.length === 0) return
+    if (!isReadyRef.current) return // re-dispara quando isReady mudar
 
     // Reset state before starting a new analysis run
     indexRef.current     = 0
@@ -153,8 +160,9 @@ export function useStockfishAnalysis({
     setIsAnalyzing(true) // eslint-disable-line react-hooks/set-state-in-effect
 
     workerRef.current?.postMessage('ucinewgame')
-    analyzeNext()
-  }, [enabled, triggered, isAnalyzing, isReady, fens, analyzeNext])
+    analyzeNextRef.current()
+  // fens e analyzeNext removidos das deps: usamos refs para ler sempre o valor atual
+  }, [enabled, triggered, isAnalyzing, isReady]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Disparo automático quando enabled muda para true
   useEffect(() => {

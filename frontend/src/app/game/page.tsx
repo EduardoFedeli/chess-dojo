@@ -4,7 +4,7 @@
 // useSearchParams() exige um Suspense boundary no Next.js App Router —
 // a lógica fica em GameContent e o export default envolve com <Suspense>.
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useGame } from '@/hooks/useGame'
 import { useStockfish } from '@/hooks/useStockfish'
@@ -129,9 +129,10 @@ function GameContent() {
 
   const isGameOver = status !== 'playing'
 
-  const analysisFens = isGameOver
-    ? [INITIAL_FEN, ...moves.map(m => m.fen)]
-    : []
+  const analysisFens = useMemo(
+    () => isGameOver ? [INITIAL_FEN, ...moves.map(m => m.fen)] : [],
+    [isGameOver, moves]
+  )
 
   const { scores, progress, isAnalyzing } = useStockfishAnalysis({
     fens:     analysisFens,
