@@ -135,32 +135,34 @@ function ReviewContent() {
   if (!savedGame) return null
 
   const dateStr = new Date(savedGame.date).toLocaleDateString('pt-BR')
+  const botName = savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)
 
   return (
     <main
-      className="min-h-screen p-6 md:p-10"
-      style={{ color: '#e5e7eb' }}
+      className="flex h-screen flex-col gap-3 overflow-hidden p-4"
+      style={{ color: '#e5e7eb', background: 'radial-gradient(ellipse at center, #0d1a0f 0%, #000000 100%)' }}
     >
-      <div className="mx-auto max-w-[940px]">
+      {/* Botão voltar */}
+      <div className="shrink-0">
         <button
           onClick={() => router.push('/')}
-          className="mb-6 flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-200"
+          className="flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-200"
         >
           ← Início
         </button>
       </div>
-      <div className="mx-auto flex max-w-[940px] flex-col gap-6 md:flex-row md:items-start md:gap-8">
+
+      {/* Conteúdo principal */}
+      <div className="flex min-h-0 flex-1 gap-6">
 
         {/* ESQUERDA: barra de vantagem + tabuleiro + controles */}
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-start gap-2">
-            {/* Barra de vantagem — mesma altura do tabuleiro */}
-            {graphScores.length > 0 && (
-              <AdvantageBar scoreCp={currentScore} height={400} />
-            )}
-
+        <div className="flex shrink-0 items-start gap-2">
+          {graphScores.length > 0 && (
+            <AdvantageBar scoreCp={currentScore} height={500} />
+          )}
+          <div className="flex flex-col gap-3">
             {/* Tabuleiro read-only */}
-            <div style={{ width: 400 }}>
+            <div style={{ width: 500, height: 500 }}>
               <ChessBoard
                 fen={currentFen}
                 playerColor={savedGame.playerColor}
@@ -169,49 +171,52 @@ function ReviewContent() {
                 disabled={true}
               />
             </div>
-          </div>
 
-          {/* Controles de navegação */}
-          <div className="flex gap-2">
-            {[
-              { label: '⏮', action: goFirst, title: 'Início' },
-              { label: '◀',  action: goPrev,  title: 'Anterior (←)' },
-              { label: '▶',  action: goNext,  title: 'Próximo (→)' },
-              { label: '⏭', action: goLast,  title: 'Fim' },
-            ].map(({ label, action, title }) => (
-              <button
-                key={label}
-                onClick={action}
-                title={title}
-                className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white"
-              >
-                {label}
-              </button>
-            ))}
+            {/* Controles de navegação */}
+            <div className="flex gap-2">
+              {[
+                { label: '⏮', action: goFirst, title: 'Início' },
+                { label: '◀',  action: goPrev,  title: 'Anterior (←)' },
+                { label: '▶',  action: goNext,  title: 'Próximo (→)' },
+                { label: '⏭', action: goLast,  title: 'Fim' },
+              ].map(({ label, action, title }) => (
+                <button
+                  key={label}
+                  onClick={action}
+                  title={title}
+                  className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* DIREITA: painel de análise */}
-        <div className="flex flex-1 flex-col gap-4">
+        {/* DIREITA: painel de análise — flex-1 com scroll interno na lista */}
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
 
-          {/* Cabeçalho da partida */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-            <p className="text-base font-bold text-white">Revisão da Partida</p>
-            <ul className="mt-2 space-y-0.5 text-sm text-neutral-400">
-              <li>📅 {dateStr}</li>
-              <li>🤖 vs {savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)}</li>
-              <li>{savedGame.playerColor === 'white' ? '♔ Brancas' : '♚ Pretas'}</li>
-              <li>
+          {/* Cabeçalho horizontal */}
+          <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <span className="text-sm font-bold text-white">Revisão da Partida</span>
+              <span className="text-xs text-neutral-500">📅 {dateStr}</span>
+              <span className="text-xs text-neutral-500">🤖 vs {botName}</span>
+              <span className="text-xs text-neutral-500">
+                {savedGame.playerColor === 'white' ? '♔ Brancas' : '♚ Pretas'}
+              </span>
+              <span className="text-xs text-neutral-500">
                 {savedGame.result === 'won'  ? '🏆 Vitória'
                 : savedGame.result === 'lost' ? '😔 Derrota'
-                : '🤝 Empate'} — {moves.length} jogadas
-              </li>
-            </ul>
+                : '🤝 Empate'}
+              </span>
+              <span className="text-xs text-neutral-600">{moves.length} jogadas</span>
+            </div>
           </div>
 
           {/* Estado: analisando (profunda) */}
           {isDeepAnalyzing && (
-            <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+            <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
                 Análise profunda em andamento...
               </p>
@@ -234,7 +239,7 @@ function ReviewContent() {
           {!activeResult && !isDeepAnalyzing && (
             <button
               onClick={() => setDeepAnalysisEnabled(true)}
-              className="w-full rounded-xl py-4 text-sm font-black tracking-wide transition-all hover:opacity-90"
+              className="shrink-0 w-full rounded-xl py-4 text-sm font-black tracking-wide transition-all hover:opacity-90"
               style={{ backgroundColor: '#6B8F71', color: '#000' }}
             >
               Começar Análise
@@ -244,30 +249,32 @@ function ReviewContent() {
           {/* Estado: análise disponível */}
           {activeResult && !isDeepAnalyzing && (
             <>
-              {/* Gráfico */}
+              {/* Gráfico compacto */}
               {graphScores.length > 0 && (
-                <AdvantageGraph
-                  scores={graphScores}
-                  currentIndex={currentIndex}
-                  onMoveClick={goTo}
-                />
+                <div className="shrink-0">
+                  <AdvantageGraph
+                    scores={graphScores}
+                    currentIndex={currentIndex}
+                    onMoveClick={goTo}
+                  />
+                </div>
               )}
 
-              {/* Resumo: precisão apenas das jogadas do jogador */}
-              <MoveSummary
-                evaluations={activeResult.evaluations}
-                accuracy={playerAccuracy ?? activeResult.accuracy}
-              />
+              {/* Resumo horizontal */}
+              <div className="shrink-0">
+                <MoveSummary
+                  evaluations={activeResult.evaluations}
+                  accuracy={playerAccuracy ?? activeResult.accuracy}
+                  compact
+                />
+              </div>
 
-              {/* Lista de jogadas com badges (só jogadas do jogador, só notáveis) */}
-              <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+              {/* Lista de jogadas — flex-1 ocupa o espaço restante, scroll interno */}
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950">
+                <p className="shrink-0 px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                   Jogadas
                 </p>
-                <div
-                  className="max-h-48 overflow-y-auto"
-                  style={{ scrollbarWidth: 'thin' }}
-                >
+                <div className="flex-1 overflow-y-auto px-4 pb-3" style={{ scrollbarWidth: 'thin' }}>
                   <div className="flex flex-col gap-0.5 text-[11px] font-mono">
                     {moves.reduce<{ white: GameMove; black: GameMove | null; wIdx: number; bIdx: number | null }[]>((rows, move, i) => {
                       if (i % 2 === 0) rows.push({ white: move, black: null, wIdx: i + 1, bIdx: null })
@@ -278,7 +285,6 @@ function ReviewContent() {
                       const bEval   = activeResult.evaluations[rowIdx * 2 + 1]
                       const wActive = currentIndex === row.wIdx
                       const bActive = currentIndex === (row.bIdx ?? -1)
-                      // Mostrar badge só para jogadas do jogador E só para classificações notáveis
                       const showWBadge = wEval && row.white.color === savedGame.playerColor && NOTABLE.has(wEval.classification)
                       const showBBadge = bEval && row.black?.color === savedGame.playerColor && NOTABLE.has(bEval.classification)
                       return (
@@ -288,7 +294,6 @@ function ReviewContent() {
                           style={{ gridTemplateColumns: '20px 1fr 1fr' }}
                         >
                           <span className="text-neutral-600">{rowIdx + 1}.</span>
-                          {/* Brancas */}
                           <button
                             onClick={() => goTo(row.wIdx)}
                             className="flex items-center gap-1 rounded px-1 py-0.5 text-left transition-colors hover:bg-neutral-800"
@@ -297,7 +302,6 @@ function ReviewContent() {
                             {row.white.san}
                             {showWBadge && <MoveBadge classification={wEval.classification} />}
                           </button>
-                          {/* Pretas */}
                           {row.black ? (
                             <button
                               onClick={() => goTo(row.bIdx!)}
@@ -317,18 +321,18 @@ function ReviewContent() {
                 </div>
               </div>
 
-              {/* Re-analisar com depth 10 */}
-              {cachedResult && !deepReady && (
-                <button
-                  onClick={() => setDeepAnalysisEnabled(true)}
-                  className="w-full rounded-xl border border-neutral-700 py-2 text-xs text-neutral-500 transition-colors hover:border-neutral-500 hover:text-neutral-300"
-                >
-                  Re-analisar com depth 10 (mais preciso)
-                </button>
-              )}
-
-              {/* Botão PDF */}
-              <PdfExportButton savedGame={savedGame} result={activeResult} playerAccuracy={playerAccuracy ?? activeResult.accuracy} />
+              {/* Botões inferiores */}
+              <div className="flex shrink-0 flex-col gap-2">
+                {cachedResult && !deepReady && (
+                  <button
+                    onClick={() => setDeepAnalysisEnabled(true)}
+                    className="w-full rounded-xl border border-neutral-700 py-2 text-xs text-neutral-500 transition-colors hover:border-neutral-500 hover:text-neutral-300"
+                  >
+                    Re-analisar com depth 10 (mais preciso)
+                  </button>
+                )}
+                <PdfExportButton savedGame={savedGame} result={activeResult} playerAccuracy={playerAccuracy ?? activeResult.accuracy} />
+              </div>
             </>
           )}
 
