@@ -11,8 +11,11 @@ type UseStockfishOptions = {
 
 export function useStockfish({ skillLevel, fen, makeMove, enabled, playerColor }: UseStockfishOptions) {
   const workerRef = useRef<Worker | null>(null)
-  const readyRef = useRef(false)
   const [isBotThinking, setIsBotThinking] = useState(false)
+  // isReady em useState (não só ref) para que o useEffect de disparo
+  // re-execute quando o worker confirmar readyok — necessário para a
+  // primeira jogada do bot quando o jogador escolhe as pretas.
+  const [isReady, setIsReady] = useState(false)
 
   // Inicializa o worker uma única vez na montagem do componente
   useEffect(() => {
@@ -29,7 +32,7 @@ export function useStockfish({ skillLevel, fen, makeMove, enabled, playerColor }
       const line = event.data
 
       if (line === 'readyok') {
-        readyRef.current = true
+        setIsReady(true)
         return
       }
 
@@ -56,24 +59,26 @@ export function useStockfish({ skillLevel, fen, makeMove, enabled, playerColor }
     return () => {
       worker.terminate()
       workerRef.current = null
-      readyRef.current = false
+      setIsReady(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // worker criado apenas uma vez — skillLevel aplicado via setoption no init
 
-  // Dispara quando o FEN muda: se for turno do bot e o jogo estiver ativo, calcula jogada
+  // Dispara quando o FEN muda OU quando o worker fica pronto (isReady).
+  // Incluir isReady nas deps garante que o bot age na posição inicial
+  // quando o jogador escolhe as pretas — sem esperar o FEN mudar.
   useEffect(() => {
     const botFenColor = playerColor === 'white' ? 'b' : 'w'
     const isBotTurn = fen.split(' ')[1] === botFenColor
 
-    if (!enabled || !isBotTurn || !readyRef.current || !workerRef.current) return
+    if (!enabled || !isBotTurn || !isReady || !workerRef.current || isBotThinking) return
 
     setIsBotThinking(true)
     workerRef.current.postMessage('ucinewgame')
     workerRef.current.postMessage(`position fen ${fen}`)
     // movetime em ms: tempo que o motor vai calcular antes de responder
     workerRef.current.postMessage('go movetime 500')
-  }, [fen, enabled, playerColor])
+  }, [fen, enabled, playerColor, isReady, isBotThinking])
 
   return { isBotThinking }
 }
