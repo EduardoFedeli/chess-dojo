@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import type { GameMove } from '@/types/game.types'
+import type { GameMove, PieceColor } from '@/types/game.types'
 
 type UseStockfishOptions = {
   skillLevel: number
   fen: string
   makeMove: (from: string, to: string, promotion?: string) => GameMove | null
   enabled: boolean
+  playerColor: PieceColor
 }
 
-export function useStockfish({ skillLevel, fen, makeMove, enabled }: UseStockfishOptions) {
+export function useStockfish({ skillLevel, fen, makeMove, enabled, playerColor }: UseStockfishOptions) {
   const workerRef = useRef<Worker | null>(null)
   const readyRef = useRef(false)
   const [isBotThinking, setIsBotThinking] = useState(false)
@@ -60,9 +61,10 @@ export function useStockfish({ skillLevel, fen, makeMove, enabled }: UseStockfis
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // worker criado apenas uma vez — skillLevel aplicado via setoption no init
 
-  // Dispara quando o FEN muda: se for turno das pretas e o jogo estiver ativo, calcula jogada
+  // Dispara quando o FEN muda: se for turno do bot e o jogo estiver ativo, calcula jogada
   useEffect(() => {
-    const isBotTurn = fen.split(' ')[1] === 'b'
+    const botFenColor = playerColor === 'white' ? 'b' : 'w'
+    const isBotTurn = fen.split(' ')[1] === botFenColor
 
     if (!enabled || !isBotTurn || !readyRef.current || !workerRef.current) return
 
@@ -71,7 +73,7 @@ export function useStockfish({ skillLevel, fen, makeMove, enabled }: UseStockfis
     workerRef.current.postMessage(`position fen ${fen}`)
     // movetime em ms: tempo que o motor vai calcular antes de responder
     workerRef.current.postMessage('go movetime 500')
-  }, [fen, enabled])
+  }, [fen, enabled, playerColor])
 
   return { isBotThinking }
 }
