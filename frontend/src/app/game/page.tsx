@@ -4,11 +4,12 @@
 // useSearchParams() exige um Suspense boundary no Next.js App Router —
 // a lógica fica em GameContent e o export default envolve com <Suspense>.
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useGame } from '@/hooks/useGame'
 import { useStockfish } from '@/hooks/useStockfish'
 import { ChessBoard } from '@/components/board/ChessBoard'
+import type { BoardTheme } from '@/components/board/ChessBoard'
 import { Button } from '@/components/ui/button'
 import type { BotLevel, GameStatus, PieceColor } from '@/types/game.types'
 
@@ -47,6 +48,33 @@ const GAME_OVER_MESSAGE: Record<Exclude<GameStatus, 'playing'>, string> = {
   draw: 'Empate 🤝',
 }
 
+// Temas de tabuleiro: dois quadrados de preview + estilos passados ao Chessboard
+const BOARD_THEMES: Record<string, { label: string; theme: BoardTheme }> = {
+  classico: {
+    label: 'Clássico',
+    theme: {
+      lightSquareStyle: { backgroundColor: '#F0D9B5' },
+      darkSquareStyle:  { backgroundColor: '#B58863' },
+    },
+  },
+  esmeralda: {
+    label: 'Esmeralda',
+    theme: {
+      lightSquareStyle: { backgroundColor: '#FFFFDD' },
+      darkSquareStyle:  { backgroundColor: '#6B8F71' },
+    },
+  },
+  noite: {
+    label: 'Noite',
+    theme: {
+      lightSquareStyle: { backgroundColor: '#DEE3E6' },
+      darkSquareStyle:  { backgroundColor: '#8CA2AD' },
+    },
+  },
+}
+
+const THEME_STORAGE_KEY = 'chess-board-theme'
+
 function GameContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -58,6 +86,19 @@ function GameContent() {
 
   const { fen, makeMove, status, resign } = useGame(colorParam)
   const [resignConfirm, setResignConfirm] = useState(false)
+
+  const [activeTheme, setActiveTheme] = useState<string>('classico')
+
+  // Carrega o tema salvo no localStorage após a montagem (client-only)
+  useEffect(() => {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY)
+    if (saved && saved in BOARD_THEMES) setActiveTheme(saved)
+  }, [])
+
+  function handleThemeChange(key: string) {
+    setActiveTheme(key)
+    localStorage.setItem(THEME_STORAGE_KEY, key)
+  }
 
   const { isBotThinking } = useStockfish({
     skillLevel,
@@ -78,12 +119,36 @@ function GameContent() {
           makeMove={makeMove}
           onMove={(move) => { if (move.isCapture) playCaptureSound() }}
           disabled={isBotThinking || isGameOver}
+          theme={BOARD_THEMES[activeTheme].theme}
         />
 
-        {/* Botão de desistir — só visível durante a partida */}
-        {!isGameOver && (
-          <div className="flex justify-end">
-            {resignConfirm ? (
+        {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
+        <div className="flex items-center justify-between">
+
+          {/* Seletor de tema: 3 botões com preview de dois quadrados */}
+          <div className="flex gap-2">
+            {Object.entries(BOARD_THEMES).map(([key, { label, theme }]) => {
+              const isActive = activeTheme === key
+              return (
+                <button
+                  key={key}
+                  title={label}
+                  onClick={() => handleThemeChange(key)}
+                  className={[
+                    'flex overflow-hidden rounded-md border-2 transition-colors',
+                    isActive ? 'border-white' : 'border-transparent hover:border-neutral-500',
+                  ].join(' ')}
+                >
+                  <span className="block h-5 w-5" style={theme.lightSquareStyle} />
+                  <span className="block h-5 w-5" style={theme.darkSquareStyle} />
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Botão de desistir — só visível durante a partida */}
+          {!isGameOver && (
+            resignConfirm ? (
               <div className="flex items-center gap-3">
                 <span className="text-sm text-neutral-400">Tem certeza?</span>
                 <button
@@ -106,9 +171,9 @@ function GameContent() {
               >
                 Desistir
               </button>
-            )}
-          </div>
-        )}
+            )
+          )}
+        </div>
       </div>
 
       {/* Overlay de fim de jogo */}
