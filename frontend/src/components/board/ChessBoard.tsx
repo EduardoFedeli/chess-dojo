@@ -19,9 +19,27 @@ type ChessBoardProps = {
 }
 
 // Estilos de highlight reutilizados em squareStyles
-const HIGHLIGHT_MOVE   = { background: 'radial-gradient(circle, rgba(0,0,0,0.18) 25%, transparent 25%)' }
-const HIGHLIGHT_CAPTURE = { background: 'radial-gradient(circle, rgba(220,38,38,0.35) 50%, transparent 52%)' }
+const HIGHLIGHT_MOVE     = { background: 'radial-gradient(circle, rgba(0,0,0,0.18) 25%, transparent 25%)' }
+const HIGHLIGHT_CAPTURE  = { background: 'radial-gradient(circle, rgba(220,38,38,0.35) 50%, transparent 52%)' }
 const HIGHLIGHT_SELECTED = { background: 'rgba(255, 255, 0, 0.4)' }
+const HIGHLIGHT_CHECK    = { background: 'rgba(220, 38, 38, 0.55)' }
+
+// Retorna a casa do rei da cor que está em xeque, ou null se não houver xeque.
+function getCheckedKingSquare(fen: string): string | null {
+  const chess = new Chess(fen)
+  if (!chess.inCheck()) return null
+
+  const turn = chess.turn() // cor que está para jogar e está em xeque
+  const board = chess.board()
+  for (const row of board) {
+    for (const cell of row) {
+      if (cell && cell.type === 'k' && cell.color === turn) {
+        return cell.square
+      }
+    }
+  }
+  return null
+}
 
 export function ChessBoard({
   fen,
@@ -81,6 +99,10 @@ export function ChessBoard({
   // Monta o mapa de estilos por casa para o react-chessboard
   const squareStyles: Record<string, React.CSSProperties> = {}
 
+  const checkedSquare = getCheckedKingSquare(fen)
+  if (checkedSquare) {
+    squareStyles[checkedSquare] = HIGHLIGHT_CHECK
+  }
   if (selectedSquare) {
     squareStyles[selectedSquare] = HIGHLIGHT_SELECTED
   }
