@@ -79,6 +79,8 @@ fix(escopo): descrição
 docs(escopo): descrição
 chore(escopo): descrição
 ```
+"Sempre ao finalizar uma implementação com sucesso, fazer commit e push 
+seguindo o padrão: feat(escopo): descrição"
 
 ## O que NÃO mexer sem instrução explícita
 
@@ -92,3 +94,4 @@ Este projeto usa Next.js 16 com React 19 — versões com breaking changes em re
 ## Contexto do desenvolvedor
 
 Desenvolvedor em transição para full stack. Priorizar clareza e boas práticas acima de performance prematura. Sempre explicar o porquê das decisões antes do como.
+
