@@ -3,8 +3,10 @@
 // 'use client' é obrigatório: react-chessboard usa eventos do browser (drag & drop)
 // e não é compatível com Server Components.
 
+import { useState } from 'react'
+import { Chess } from 'chess.js'
 import { Chessboard } from 'react-chessboard'
-import type { PieceDropHandlerArgs } from 'react-chessboard'
+import type { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard'
 import type { GameMove, PieceColor } from '@/types/game.types'
 
 type ChessBoardProps = {
@@ -16,6 +18,11 @@ type ChessBoardProps = {
   disabled?: boolean
 }
 
+// Estilos de highlight reutilizados em squareStyles
+const HIGHLIGHT_MOVE   = { background: 'radial-gradient(circle, rgba(0,0,0,0.18) 25%, transparent 25%)' }
+const HIGHLIGHT_CAPTURE = { background: 'radial-gradient(circle, rgba(220,38,38,0.35) 50%, transparent 52%)' }
+const HIGHLIGHT_SELECTED = { background: 'rgba(255, 255, 0, 0.4)' }
+
 export function ChessBoard({
   fen,
   playerColor,
@@ -23,23 +30,62 @@ export function ChessBoard({
   onMove,
   disabled = false,
 }: ChessBoardProps) {
-  // react-chessboard v5 passa { piece, sourceSquare, targetSquare } ao handler.
-  // targetSquare é null quando a peça é solta fora do tabuleiro.
-  // Retornar false reverte a peça à posição original.
-  // Retornar true confirma a jogada.
-  function handlePieceDrop({
-    sourceSquare,
-    targetSquare,
-  }: PieceDropHandlerArgs): boolean {
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
+  const [validSquares, setValidSquares] = useState<Record<string, { isCapture: boolean }>>({})
+
+  function clearHighlights() {
+    setSelectedSquare(null)
+    setValidSquares({})
+  }
+
+  function handleSquareClick({ square }: SquareHandlerArgs) {
+    if (disabled) return
+
+    // Se clicou numa casa válida para mover a peça selecionada, tenta a jogada
+    if (selectedSquare && validSquares[square] !== undefined) {
+      const move = makeMove(selectedSquare, square)
+      clearHighlights()
+      if (move) onMove(move)
+      return
+    }
+
+    // Calcula os movimentos válidos a partir da casa clicada
+    const chess = new Chess(fen)
+    const moves = chess.moves({ square: square as Parameters<typeof chess.moves>[0]['square'], verbose: true })
+
+    if (moves.length === 0) {
+      clearHighlights()
+      return
+    }
+
+    const newValidSquares: Record<string, { isCapture: boolean }> = {}
+    for (const m of moves) {
+      newValidSquares[m.to] = { isCapture: !!m.captured }
+    }
+
+    setSelectedSquare(square)
+    setValidSquares(newValidSquares)
+  }
+
+  function handlePieceDrop({ sourceSquare, targetSquare }: PieceDropHandlerArgs): boolean {
     if (disabled || !targetSquare) return false
 
-    // Promoção: useGame.makeMove padrão é rainha quando nenhum argumento é passado.
-    // UI de seleção de peça será implementada em iteração futura.
     const move = makeMove(sourceSquare, targetSquare)
+    clearHighlights()
     if (!move) return false
 
     onMove(move)
     return true
+  }
+
+  // Monta o mapa de estilos por casa para o react-chessboard
+  const squareStyles: Record<string, React.CSSProperties> = {}
+
+  if (selectedSquare) {
+    squareStyles[selectedSquare] = HIGHLIGHT_SELECTED
+  }
+  for (const [sq, { isCapture }] of Object.entries(validSquares)) {
+    squareStyles[sq] = isCapture ? HIGHLIGHT_CAPTURE : HIGHLIGHT_MOVE
   }
 
   // react-chessboard v5 recebe todas as opções num único prop `options`
@@ -49,7 +95,9 @@ export function ChessBoard({
         position: fen,
         boardOrientation: playerColor,
         onPieceDrop: handlePieceDrop,
+        onSquareClick: handleSquareClick,
         allowDragging: !disabled,
+        squareStyles,
       }}
     />
   )
