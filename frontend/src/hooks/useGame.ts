@@ -7,6 +7,7 @@ type UseGameReturn = {
   moves: GameMove[]
   status: GameStatus
   makeMove: (from: string, to: string, promotion?: string) => GameMove | null
+  resign: () => void
   reset: () => void
 }
 
@@ -18,6 +19,7 @@ export function useGame(playerColor: PieceColor): UseGameReturn {
   const [fen, setFen] = useState(chessRef.current.fen())
   const [moves, setMoves] = useState<GameMove[]>([])
   const [status, setStatus] = useState<GameStatus>('playing')
+  const [isResigned, setIsResigned] = useState(false)
 
   const makeMove = useCallback(
     (from: string, to: string, promotion?: string): GameMove | null => {
@@ -59,14 +61,22 @@ export function useGame(playerColor: PieceColor): UseGameReturn {
     [playerColor]
   )
 
+  const resign = useCallback(() => {
+    setIsResigned(true)
+  }, [])
+
   const reset = useCallback(() => {
     chessRef.current = new Chess()
     setFen(chessRef.current.fen())
     setMoves([])
     setStatus('playing')
+    setIsResigned(false)
   }, [])
 
-  return { fen, moves, status, makeMove, reset }
+  // isResigned sobrescreve o status derivado do chess.js
+  const finalStatus: GameStatus = isResigned ? 'lost' : status
+
+  return { fen, moves, status: finalStatus, makeMove, resign, reset }
 }
 
 // Separado para clareza: determina o status da partida do ponto de vista do jogador.

@@ -4,7 +4,7 @@
 // useSearchParams() exige um Suspense boundary no Next.js App Router —
 // a lógica fica em GameContent e o export default envolve com <Suspense>.
 
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useGame } from '@/hooks/useGame'
 import { useStockfish } from '@/hooks/useStockfish'
@@ -56,7 +56,8 @@ function GameContent() {
 
   const skillLevel = SKILL_LEVEL[botParam] ?? 2
 
-  const { fen, makeMove, status } = useGame(colorParam)
+  const { fen, makeMove, status, resign } = useGame(colorParam)
+  const [resignConfirm, setResignConfirm] = useState(false)
 
   const { isBotThinking } = useStockfish({
     skillLevel,
@@ -70,7 +71,7 @@ function GameContent() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center p-8">
-      <div className="w-full max-w-[560px]">
+      <div className="w-full max-w-[560px] flex flex-col gap-4">
         <ChessBoard
           fen={fen}
           playerColor={colorParam}
@@ -78,6 +79,36 @@ function GameContent() {
           onMove={(move) => { if (move.isCapture) playCaptureSound() }}
           disabled={isBotThinking || isGameOver}
         />
+
+        {/* Botão de desistir — só visível durante a partida */}
+        {!isGameOver && (
+          <div className="flex justify-end">
+            {resignConfirm ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-neutral-400">Tem certeza?</span>
+                <button
+                  onClick={() => { resign(); setResignConfirm(false) }}
+                  className="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+                >
+                  Sim
+                </button>
+                <button
+                  onClick={() => setResignConfirm(false)}
+                  className="rounded-lg border border-neutral-600 px-4 py-2 text-sm font-semibold text-neutral-300 hover:border-neutral-400 hover:text-white"
+                >
+                  Não
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setResignConfirm(true)}
+                className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:border-red-700 hover:text-red-400 transition-colors"
+              >
+                Desistir
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Overlay de fim de jogo */}
