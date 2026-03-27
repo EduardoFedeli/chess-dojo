@@ -40,3 +40,39 @@ export type Game = {
   startedAt: string  // ISO 8601
   endedAt?: string   // ISO 8601 — ausente enquanto a partida está em andamento
 }
+
+// Classificação de uma jogada individual
+export type MoveClassification =
+  | 'brilliant'    // 🌟 Brilhante
+  | 'excellent'    // ✨ Excelente
+  | 'good'         // ✅ Boa
+  | 'inaccuracy'   // ⚠️ Imprecisão
+  | 'mistake'      // ❌ Erro
+  | 'missed_win'   // 🎯 Chance Perdida
+  | 'blunder'      // 💀 Capivarada
+
+// Avaliação de uma jogada: scores em centipawns (perspectiva brancas)
+export type MoveEvaluation = {
+  moveIndex: number                  // índice no array GameMove[]
+  scoreBefore: number                // centipawns antes da jogada
+  scoreAfter: number                 // centipawns depois da jogada
+  delta: number                      // perda em pawns pelo jogador (sempre >= 0)
+  classification: MoveClassification
+}
+
+// Resultado completo da análise — salvo em localStorage
+export type AnalysisResult = {
+  evaluations: MoveEvaluation[]
+  accuracy: number                   // 0–100, inteiro
+  date: string                       // ISO 8601
+}
+
+// Metadados da última partida — salvo em localStorage
+export type SavedGame = {
+  pgn: string
+  botLevel: string
+  playerColor: 'white' | 'black'
+  result: 'won' | 'lost' | 'draw'
+  date: string                       // ISO 8601
+  moves: GameMove[]
+}
