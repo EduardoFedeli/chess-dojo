@@ -15,11 +15,17 @@ import type {
   SavedGame,
 } from '@/types/game.types'
 
-const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-const STORAGE_GAME     = 'chess-dojo:last-game'
+const INITIAL_FEN    = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+const STORAGE_GAME   = 'chess-dojo:last-game'
 const STORAGE_ANALYSIS = 'chess-dojo:last-analysis'
 
-// Badge colorido por classificação para a lista de jogadas
+// Classificações que merecem destaque visual na lista de jogadas.
+// Boa e Excelente são omitidas — são jogadas normais e não precisam de badge.
+const NOTABLE: Set<MoveClassification> = new Set([
+  'brilliant', 'inaccuracy', 'mistake', 'missed_win', 'blunder',
+])
+
+// Badge colorido por classificação (só para classificações notáveis)
 function MoveBadge({ classification }: { classification: MoveClassification }) {
   const meta = CLASSIFICATION_META[classification]
   return (
@@ -90,8 +96,6 @@ function ReviewContent() {
     : cachedResult
 
   const activeScores = deepReady ? deepScores : null
-  // Para o gráfico, usamos os scores da análise profunda ou os do cache
-  // (cachedResult não guarda scores raw, apenas evaluations — usar scoreBefore/After)
   const graphScores: number[] = activeScores
     ?? (activeResult?.evaluations
         ? [
@@ -100,12 +104,19 @@ function ReviewContent() {
           ]
         : [])
 
+  // Precisão apenas das jogadas do jogador
+  const playerAccuracy = activeResult
+    ? computeAccuracy(
+        activeResult.evaluations.filter((_, i) => moves[i]?.color === savedGame?.playerColor)
+      )
+    : null
+
   // --- Navegação ---
-  const goTo       = useCallback((i: number) => setCurrentIndex(Math.max(0, Math.min(i, moves.length))), [moves.length])
-  const goFirst    = useCallback(() => goTo(0), [goTo])
-  const goPrev     = useCallback(() => goTo(currentIndex - 1), [goTo, currentIndex])
-  const goNext     = useCallback(() => goTo(currentIndex + 1), [goTo, currentIndex])
-  const goLast     = useCallback(() => goTo(moves.length), [goTo, moves.length])
+  const goTo    = useCallback((i: number) => setCurrentIndex(Math.max(0, Math.min(i, moves.length))), [moves.length])
+  const goFirst = useCallback(() => goTo(0), [goTo])
+  const goPrev  = useCallback(() => goTo(currentIndex - 1), [goTo, currentIndex])
+  const goNext  = useCallback(() => goTo(currentIndex + 1), [goTo, currentIndex])
+  const goLast  = useCallback(() => goTo(moves.length), [goTo, moves.length])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -117,13 +128,12 @@ function ReviewContent() {
   }, [goPrev, goNext])
 
   // FEN atual para o tabuleiro
-  const currentFen = currentIndex === 0 ? INITIAL_FEN : moves[currentIndex - 1].fen
+  const currentFen   = currentIndex === 0 ? INITIAL_FEN : moves[currentIndex - 1].fen
   // Score atual para a barra de vantagem
   const currentScore = graphScores[currentIndex] ?? 0
 
   if (!savedGame) return null
 
-  // Formatar data
   const dateStr = new Date(savedGame.date).toLocaleDateString('pt-BR')
 
   return (
@@ -131,14 +141,14 @@ function ReviewContent() {
       className="min-h-screen p-6 md:p-10"
       style={{ backgroundColor: '#0a0a0a', color: '#e5e7eb' }}
     >
-      <div className="mx-auto flex max-w-[900px] flex-col gap-6 md:flex-row md:items-start md:gap-8">
+      <div className="mx-auto flex max-w-[940px] flex-col gap-6 md:flex-row md:items-start md:gap-8">
 
         {/* ESQUERDA: barra de vantagem + tabuleiro + controles */}
         <div className="flex flex-col items-center gap-4">
-          <div className="flex items-start gap-3">
-            {/* Barra de vantagem — só com análise */}
+          <div className="flex items-start gap-2">
+            {/* Barra de vantagem — mesma altura do tabuleiro */}
             {graphScores.length > 0 && (
-              <AdvantageBar scoreCp={currentScore} />
+              <AdvantageBar scoreCp={currentScore} height={400} />
             )}
 
             {/* Tabuleiro read-only */}
@@ -156,10 +166,10 @@ function ReviewContent() {
           {/* Controles de navegação */}
           <div className="flex gap-2">
             {[
-              { label: '⏮', action: goFirst,  title: 'Início' },
-              { label: '◀',  action: goPrev,   title: 'Anterior (←)' },
-              { label: '▶',  action: goNext,   title: 'Próximo (→)' },
-              { label: '⏭', action: goLast,   title: 'Fim' },
+              { label: '⏮', action: goFirst, title: 'Início' },
+              { label: '◀',  action: goPrev,  title: 'Anterior (←)' },
+              { label: '▶',  action: goNext,  title: 'Próximo (→)' },
+              { label: '⏭', action: goLast,  title: 'Fim' },
             ].map(({ label, action, title }) => (
               <button
                 key={label}
@@ -223,7 +233,7 @@ function ReviewContent() {
             </button>
           )}
 
-          {/* Estado: análise disponível (cache ou profunda) */}
+          {/* Estado: análise disponível */}
           {activeResult && !isDeepAnalyzing && (
             <>
               {/* Gráfico */}
@@ -235,19 +245,19 @@ function ReviewContent() {
                 />
               )}
 
-              {/* Resumo */}
+              {/* Resumo: precisão apenas das jogadas do jogador */}
               <MoveSummary
                 evaluations={activeResult.evaluations}
-                accuracy={activeResult.accuracy}
+                accuracy={playerAccuracy ?? activeResult.accuracy}
               />
 
-              {/* Lista de jogadas com badges */}
+              {/* Lista de jogadas com badges (só jogadas do jogador, só notáveis) */}
               <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                   Jogadas
                 </p>
                 <div
-                  className="max-h-64 overflow-y-auto"
+                  className="max-h-48 overflow-y-auto"
                   style={{ scrollbarWidth: 'thin' }}
                 >
                   <div className="flex flex-col gap-0.5 text-[11px] font-mono">
@@ -256,10 +266,13 @@ function ReviewContent() {
                       else { rows[rows.length - 1].black = move; rows[rows.length - 1].bIdx = i + 1 }
                       return rows
                     }, []).map((row, rowIdx) => {
-                      const wEval = activeResult.evaluations[rowIdx * 2]
-                      const bEval = activeResult.evaluations[rowIdx * 2 + 1]
+                      const wEval   = activeResult.evaluations[rowIdx * 2]
+                      const bEval   = activeResult.evaluations[rowIdx * 2 + 1]
                       const wActive = currentIndex === row.wIdx
                       const bActive = currentIndex === (row.bIdx ?? -1)
+                      // Mostrar badge só para jogadas do jogador E só para classificações notáveis
+                      const showWBadge = wEval && row.white.color === savedGame.playerColor && NOTABLE.has(wEval.classification)
+                      const showBBadge = bEval && row.black?.color === savedGame.playerColor && NOTABLE.has(bEval.classification)
                       return (
                         <div
                           key={rowIdx}
@@ -274,7 +287,7 @@ function ReviewContent() {
                             style={{ background: wActive ? '#EE964B14' : undefined, color: wActive ? '#EE964B' : '#e5e7eb' }}
                           >
                             {row.white.san}
-                            {wEval && <MoveBadge classification={wEval.classification} />}
+                            {showWBadge && <MoveBadge classification={wEval.classification} />}
                           </button>
                           {/* Pretas */}
                           {row.black ? (
@@ -284,7 +297,7 @@ function ReviewContent() {
                               style={{ background: bActive ? '#EE964B14' : undefined, color: bActive ? '#EE964B' : '#9ca3af' }}
                             >
                               {row.black.san}
-                              {bEval && <MoveBadge classification={bEval.classification} />}
+                              {showBBadge && <MoveBadge classification={bEval!.classification} />}
                             </button>
                           ) : (
                             <span className="text-neutral-700">—</span>
@@ -307,7 +320,7 @@ function ReviewContent() {
               )}
 
               {/* Botão PDF */}
-              <PdfExportButton savedGame={savedGame} result={activeResult} scores={graphScores} />
+              <PdfExportButton savedGame={savedGame} result={activeResult} playerAccuracy={playerAccuracy ?? activeResult.accuracy} />
             </>
           )}
 
@@ -317,145 +330,141 @@ function ReviewContent() {
   )
 }
 
+// Gera PDF com jsPDF puro (sem html2canvas) para evitar erros de parse de
+// cores CSS modernas (oklch/lab) usadas pelo Tailwind v4.
 function PdfExportButton({
   savedGame,
   result,
-  scores: _scores,
+  playerAccuracy,
 }: {
   savedGame: SavedGame
   result: AnalysisResult
-  scores: number[]
+  playerAccuracy: number
 }) {
   const [isExporting, setIsExporting] = useState(false)
 
   async function handleExport() {
     setIsExporting(true)
     try {
-      const { default: jsPDF }    = await import('jspdf')
-      const { default: html2canvas } = await import('html2canvas')
+      const { default: jsPDF } = await import('jspdf')
 
-      const el = document.getElementById('pdf-content')
-      if (!el) return
+      const W = 210, H = 297, M = 14
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+      let y = M
 
-      el.style.display = 'block'
-      const canvas = await html2canvas(el, { backgroundColor: '#ffffff', scale: 2 })
-      el.style.display = 'none'
-
-      const pdf      = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' })
-      const pdfW     = pdf.internal.pageSize.getWidth()
-      const pdfH     = (canvas.height * pdfW) / canvas.width
-      const imgData  = canvas.toDataURL('image/png')
-
-      // Se o conteúdo for mais alto que uma página, adicionar páginas extras
-      const pageH = pdf.internal.pageSize.getHeight()
-      if (pdfH <= pageH) {
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH)
-      } else {
-        let yOffset = 0
-        while (yOffset < pdfH) {
-          pdf.addImage(imgData, 'PNG', 0, -yOffset, pdfW, pdfH)
-          yOffset += pageH
-          if (yOffset < pdfH) pdf.addPage()
-        }
+      function ensureSpace(needed: number) {
+        if (y + needed > H - M) { doc.addPage(); y = M }
       }
 
+      const dateStr    = new Date(savedGame.date).toLocaleDateString('pt-BR')
+      const resultText = savedGame.result === 'won' ? 'Vitoria' : savedGame.result === 'lost' ? 'Derrota' : 'Empate'
+      const colorText  = savedGame.playerColor === 'white' ? 'Brancas' : 'Pretas'
+      const botName    = savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)
+      const moves      = savedGame.moves
+
+      // ── Cabeçalho ────────────────────────────────────────────────────────────
+      doc.setFontSize(15).setFont('helvetica', 'bold').setTextColor(0, 0, 0)
+      doc.text('Chess Dojo - Revisao de Partida', M, y); y += 7
+
+      doc.setFontSize(9).setFont('helvetica', 'normal').setTextColor(100, 100, 100)
+      doc.text(`${dateStr}  vs ${botName}  ${colorText}  ${resultText}  ${moves.length} jogadas`, M, y); y += 4
+
+      doc.setDrawColor(180, 180, 180).line(M, y, W - M, y); y += 6
+
+      // ── Precisão do jogador ───────────────────────────────────────────────────
+      doc.setFontSize(11).setFont('helvetica', 'bold').setTextColor(0, 0, 0)
+      doc.text('Precisao do jogador:', M, y)
+      doc.setTextColor(45, 106, 79)
+      doc.text(`${playerAccuracy}%`, M + 47, y); y += 8
+
+      // ── Contagem de classificações ────────────────────────────────────────────
+      const classKeys = Object.keys(CLASSIFICATION_META) as MoveClassification[]
+      const counts    = classKeys.reduce((acc, key) => {
+        acc[key] = result.evaluations.filter(e => e.classification === key).length
+        return acc
+      }, {} as Record<MoveClassification, number>)
+
+      const cols  = 4
+      const cellW = (W - M * 2) / cols
+      classKeys.forEach((key, i) => {
+        const col = i % cols, row = Math.floor(i / cols)
+        const x = M + col * cellW, cy = y + row * 10
+        ensureSpace(12)
+        doc.setFontSize(8).setFont('helvetica', 'normal').setTextColor(90, 90, 90)
+        doc.text(CLASSIFICATION_META[key].label, x, cy)
+        doc.setFont('helvetica', 'bold').setTextColor(0, 0, 0)
+        doc.text(String(counts[key]), x, cy + 4)
+      })
+      y += Math.ceil(classKeys.length / cols) * 10 + 4
+
+      doc.setDrawColor(180, 180, 180).line(M, y, W - M, y); y += 6
+
+      // ── Lista de jogadas (duas colunas) ───────────────────────────────────────
+      doc.setFontSize(8).setFont('helvetica', 'normal')
+      const colW   = (W - M * 2) / 2
+      const rowH   = 5
+      const numW   = 8   // largura reservada para "N."
+      const classW = 22  // largura reservada para label de classificação
+
+      for (let i = 0; i < moves.length; i += 2) {
+        ensureSpace(rowH)
+
+        const wMove = moves[i]
+        const bMove = moves[i + 1]
+        const wEval = result.evaluations[i]
+        const bEval = result.evaluations[i + 1]
+        const pairNum = Math.floor(i / 2) + 1
+
+        // Número
+        doc.setTextColor(140, 140, 140)
+        doc.text(`${pairNum}.`, M, y)
+
+        // Brancas
+        doc.setTextColor(0, 0, 0)
+        doc.text(wMove.san, M + numW, y)
+        if (wEval) {
+          doc.setTextColor(100, 100, 100).setFontSize(6)
+          doc.text(CLASSIFICATION_META[wEval.classification].label, M + numW + 10, y)
+          doc.setFontSize(8)
+        }
+
+        // Pretas
+        if (bMove) {
+          doc.setTextColor(60, 60, 60)
+          doc.text(bMove.san, M + colW, y)
+          if (bEval) {
+            doc.setTextColor(100, 100, 100).setFontSize(6)
+            doc.text(CLASSIFICATION_META[bEval.classification].label, M + colW + 10, y)
+            doc.setFontSize(8)
+          }
+        }
+
+        y += rowH
+      }
+
+      // ── Rodapé ───────────────────────────────────────────────────────────────
+      ensureSpace(10)
+      doc.setDrawColor(200, 200, 200).line(M, y + 4, W - M, y + 4); y += 8
+      doc.setFontSize(7).setFont('helvetica', 'normal').setTextColor(160, 160, 160)
+      doc.text(`Chess Dojo  -  ${dateStr}`, W / 2, y, { align: 'center' })
+
+      // ── Salvar ───────────────────────────────────────────────────────────────
       const date = new Date(savedGame.date).toISOString().slice(0, 10)
-      pdf.save(`chess-dojo-revisao-${date}.pdf`)
+      doc.save(`chess-dojo-revisao-${date}.pdf`)
+
     } finally {
       setIsExporting(false)
     }
   }
 
-  const dateStr = new Date(savedGame.date).toLocaleDateString('pt-BR')
-  const counts  = (Object.keys(CLASSIFICATION_META) as MoveClassification[]).reduce(
-    (acc, key) => { acc[key] = result.evaluations.filter(e => e.classification === key).length; return acc },
-    {} as Record<MoveClassification, number>,
-  )
-  const moves = savedGame.moves
-
   return (
-    <>
-      <button
-        onClick={handleExport}
-        disabled={isExporting}
-        className="w-full rounded-xl border border-neutral-700 py-3 text-sm font-semibold text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isExporting ? 'Gerando PDF...' : '⬇ Baixar Revisão em PDF'}
-      </button>
-
-      {/* Elemento capturado pelo html2canvas — oculto na UI normal */}
-      <div
-        id="pdf-content"
-        style={{
-          display:    'none',
-          position:   'fixed',
-          top:        0,
-          left:       0,
-          width:      700,
-          background: '#ffffff',
-          color:      '#111111',
-          fontFamily: 'system-ui, sans-serif',
-          padding:    40,
-          zIndex:     -1,
-        }}
-      >
-        {/* Cabeçalho */}
-        <div style={{ borderBottom: '2px solid #111', paddingBottom: 12, marginBottom: 16 }}>
-          <div style={{ fontSize: 20, fontWeight: 800 }}>♟ Chess Dojo — Revisão de Partida</div>
-          <div style={{ color: '#555', fontSize: 12, marginTop: 4 }}>
-            {dateStr} · vs {savedGame.botLevel} ·{' '}
-            {savedGame.playerColor === 'white' ? 'Brancas' : 'Pretas'} ·{' '}
-            <strong>
-              {savedGame.result === 'won' ? 'Vitória' : savedGame.result === 'lost' ? 'Derrota' : 'Empate'}
-            </strong>
-          </div>
-        </div>
-
-        {/* Precisão */}
-        <div style={{ background: '#f5f5f5', borderRadius: 6, padding: '8px 16px', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ fontWeight: 700 }}>Precisão:</span>
-          <span style={{ fontSize: 18, fontWeight: 800, color: '#2d6a4f' }}>{result.accuracy}%</span>
-        </div>
-
-        {/* Cards de categorias */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
-          {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map(key => {
-            const meta = CLASSIFICATION_META[key]
-            return (
-              <div key={key} style={{ background: '#f0f0f0', borderRadius: 6, padding: 8, textAlign: 'center', fontSize: 11 }}>
-                <div style={{ fontSize: 18 }}>{meta.emoji}</div>
-                <div>{meta.label}</div>
-                <div style={{ fontWeight: 800, fontSize: 14 }}>{counts[key]}</div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Gráfico — placeholder */}
-        <div id="pdf-graph-placeholder" style={{ background: '#eee', height: 80, borderRadius: 6, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#888' }}>
-          [gráfico de vantagem]
-        </div>
-
-        {/* Lista de jogadas */}
-        <div style={{ fontSize: 11, fontFamily: 'monospace', columns: 2, columnGap: 24 }}>
-          {moves.map((move, i) => {
-            const ev   = result.evaluations[i]
-            const meta = ev ? CLASSIFICATION_META[ev.classification] : null
-            const num  = i % 2 === 0 ? `${Math.floor(i / 2) + 1}. ` : ''
-            return (
-              <div key={i} style={{ lineHeight: 2, breakInside: 'avoid' }}>
-                {num}{move.san} {meta?.emoji ?? ''}
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Rodapé */}
-        <div style={{ borderTop: '1px solid #ddd', marginTop: 24, paddingTop: 8, fontSize: 10, color: '#999', textAlign: 'center' }}>
-          chess-dojo-revisao-{new Date(savedGame.date).toISOString().slice(0, 10)}.pdf · Chess Dojo
-        </div>
-      </div>
-    </>
+    <button
+      onClick={handleExport}
+      disabled={isExporting}
+      className="w-full rounded-xl border border-neutral-700 py-3 text-sm font-semibold text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {isExporting ? 'Gerando PDF...' : '⬇ Baixar Revisão em PDF'}
+    </button>
   )
 }
 

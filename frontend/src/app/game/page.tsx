@@ -158,7 +158,7 @@ function GameContent() {
   return (
     <main className="relative flex min-h-screen items-center justify-center p-8">
       {/* Wrapper: coluna única em mobile, duas colunas em desktop */}
-      <div className="flex w-full max-w-[740px] flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+      <div className="flex w-full max-w-[740px] flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-6">
 
         {/* Coluna esquerda: tabuleiro + controles */}
         <div className="flex flex-col gap-4" style={{ maxWidth: 560 }}>
@@ -223,8 +223,8 @@ function GameContent() {
         </div>
 
         {/* Coluna direita: painel de histórico */}
-        {/* Desktop: ao lado do tabuleiro. Mobile: abaixo (ordem natural do flex-col) */}
-        <div className="sm:sticky sm:top-8">
+        {/* Desktop: ao lado do tabuleiro, mesma altura. Mobile: abaixo (flex-col). */}
+        <div className="sm:flex sm:flex-col">
           <MoveHistory moves={moves} />
         </div>
       </div>
