@@ -71,8 +71,8 @@ export type AnalysisResult = {
 export type SavedGame = {
   pgn: string
   botLevel: string
-  playerColor: 'white' | 'black'
-  result: 'won' | 'lost' | 'draw'
+  playerColor: PieceColor
+  result: Exclude<GameStatus, 'playing'>
   date: string                       // ISO 8601
   moves: GameMove[]
 }
