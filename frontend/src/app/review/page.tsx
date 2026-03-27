@@ -313,20 +313,145 @@ function ReviewContent() {
   )
 }
 
-// PdfExportButton fica em um componente separado para manter ReviewContent legível.
-// Implementado na Task 12.
-function PdfExportButton(_props: {
+function PdfExportButton({
+  savedGame,
+  result,
+  scores: _scores,
+}: {
   savedGame: SavedGame
   result: AnalysisResult
   scores: number[]
 }) {
+  const [isExporting, setIsExporting] = useState(false)
+
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      const { default: jsPDF }    = await import('jspdf')
+      const { default: html2canvas } = await import('html2canvas')
+
+      const el = document.getElementById('pdf-content')
+      if (!el) return
+
+      el.style.display = 'block'
+      const canvas = await html2canvas(el, { backgroundColor: '#ffffff', scale: 2 })
+      el.style.display = 'none'
+
+      const pdf      = new jsPDF({ orientation: 'portrait', unit: 'px', format: 'a4' })
+      const pdfW     = pdf.internal.pageSize.getWidth()
+      const pdfH     = (canvas.height * pdfW) / canvas.width
+      const imgData  = canvas.toDataURL('image/png')
+
+      // Se o conteúdo for mais alto que uma página, adicionar páginas extras
+      const pageH = pdf.internal.pageSize.getHeight()
+      if (pdfH <= pageH) {
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH)
+      } else {
+        let yOffset = 0
+        while (yOffset < pdfH) {
+          pdf.addImage(imgData, 'PNG', 0, -yOffset, pdfW, pdfH)
+          yOffset += pageH
+          if (yOffset < pdfH) pdf.addPage()
+        }
+      }
+
+      const date = new Date(savedGame.date).toISOString().slice(0, 10)
+      pdf.save(`chess-dojo-revisao-${date}.pdf`)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const dateStr = new Date(savedGame.date).toLocaleDateString('pt-BR')
+  const counts  = (Object.keys(CLASSIFICATION_META) as MoveClassification[]).reduce(
+    (acc, key) => { acc[key] = result.evaluations.filter(e => e.classification === key).length; return acc },
+    {} as Record<MoveClassification, number>,
+  )
+  const moves = savedGame.moves
+
   return (
-    <button
-      disabled
-      className="w-full cursor-not-allowed rounded-xl border border-neutral-700 py-3 text-sm text-neutral-600"
-    >
-      ⬇ Baixar Revisão em PDF (em breve)
-    </button>
+    <>
+      <button
+        onClick={handleExport}
+        disabled={isExporting}
+        className="w-full rounded-xl border border-neutral-700 py-3 text-sm font-semibold text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isExporting ? 'Gerando PDF...' : '⬇ Baixar Revisão em PDF'}
+      </button>
+
+      {/* Elemento capturado pelo html2canvas — oculto na UI normal */}
+      <div
+        id="pdf-content"
+        style={{
+          display:    'none',
+          position:   'fixed',
+          top:        0,
+          left:       0,
+          width:      700,
+          background: '#ffffff',
+          color:      '#111111',
+          fontFamily: 'system-ui, sans-serif',
+          padding:    40,
+          zIndex:     -1,
+        }}
+      >
+        {/* Cabeçalho */}
+        <div style={{ borderBottom: '2px solid #111', paddingBottom: 12, marginBottom: 16 }}>
+          <div style={{ fontSize: 20, fontWeight: 800 }}>♟ Chess Dojo — Revisão de Partida</div>
+          <div style={{ color: '#555', fontSize: 12, marginTop: 4 }}>
+            {dateStr} · vs {savedGame.botLevel} ·{' '}
+            {savedGame.playerColor === 'white' ? 'Brancas' : 'Pretas'} ·{' '}
+            <strong>
+              {savedGame.result === 'won' ? 'Vitória' : savedGame.result === 'lost' ? 'Derrota' : 'Empate'}
+            </strong>
+          </div>
+        </div>
+
+        {/* Precisão */}
+        <div style={{ background: '#f5f5f5', borderRadius: 6, padding: '8px 16px', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontWeight: 700 }}>Precisão:</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#2d6a4f' }}>{result.accuracy}%</span>
+        </div>
+
+        {/* Cards de categorias */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
+          {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map(key => {
+            const meta = CLASSIFICATION_META[key]
+            return (
+              <div key={key} style={{ background: '#f0f0f0', borderRadius: 6, padding: 8, textAlign: 'center', fontSize: 11 }}>
+                <div style={{ fontSize: 18 }}>{meta.emoji}</div>
+                <div>{meta.label}</div>
+                <div style={{ fontWeight: 800, fontSize: 14 }}>{counts[key]}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Gráfico — placeholder */}
+        <div id="pdf-graph-placeholder" style={{ background: '#eee', height: 80, borderRadius: 6, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#888' }}>
+          [gráfico de vantagem]
+        </div>
+
+        {/* Lista de jogadas */}
+        <div style={{ fontSize: 11, fontFamily: 'monospace', columns: 2, columnGap: 24 }}>
+          {moves.map((move, i) => {
+            const ev   = result.evaluations[i]
+            const meta = ev ? CLASSIFICATION_META[ev.classification] : null
+            const num  = i % 2 === 0 ? `${Math.floor(i / 2) + 1}. ` : ''
+            return (
+              <div key={i} style={{ lineHeight: 2, breakInside: 'avoid' }}>
+                {num}{move.san} {meta?.emoji ?? ''}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Rodapé */}
+        <div style={{ borderTop: '1px solid #ddd', marginTop: 24, paddingTop: 8, fontSize: 10, color: '#999', textAlign: 'center' }}>
+          chess-dojo-revisao-{new Date(savedGame.date).toISOString().slice(0, 10)}.pdf · Chess Dojo
+        </div>
+      </div>
+    </>
   )
 }
 
