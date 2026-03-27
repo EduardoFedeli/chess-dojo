@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <main
       className="flex min-h-screen flex-col items-center justify-center gap-14 px-6 py-16"
-      style={{ backgroundColor: 'var(--brand-bg)', color: 'var(--brand-text)' }}
+      style={{ color: 'var(--brand-text)' }}
     >
       {/* Header */}
       <div className="text-center">

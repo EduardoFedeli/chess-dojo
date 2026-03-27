@@ -139,8 +139,16 @@ function ReviewContent() {
   return (
     <main
       className="min-h-screen p-6 md:p-10"
-      style={{ backgroundColor: '#0a0a0a', color: '#e5e7eb' }}
+      style={{ color: '#e5e7eb' }}
     >
+      <div className="mx-auto max-w-[940px]">
+        <button
+          onClick={() => router.push('/')}
+          className="mb-6 flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-200"
+        >
+          ← Início
+        </button>
+      </div>
       <div className="mx-auto flex max-w-[940px] flex-col gap-6 md:flex-row md:items-start md:gap-8">
 
         {/* ESQUERDA: barra de vantagem + tabuleiro + controles */}
