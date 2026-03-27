@@ -6,8 +6,13 @@
 import { useState } from 'react'
 import { Chess } from 'chess.js'
 import { Chessboard } from 'react-chessboard'
-import type { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard'
+import type { PieceDropHandlerArgs, PieceHandlerArgs, SquareHandlerArgs } from 'react-chessboard'
 import type { GameMove, PieceColor } from '@/types/game.types'
+
+export type BoardTheme = {
+  darkSquareStyle: React.CSSProperties
+  lightSquareStyle: React.CSSProperties
+}
 
 type ChessBoardProps = {
   fen: string
@@ -16,6 +21,7 @@ type ChessBoardProps = {
   onMove: (move: GameMove) => void
   // disabled bloqueia interação: usado durante turno do bot ou fim de jogo
   disabled?: boolean
+  theme?: BoardTheme
 }
 
 // Estilos de highlight reutilizados em squareStyles
@@ -29,7 +35,7 @@ function getCheckedKingSquare(fen: string): string | null {
   const chess = new Chess(fen)
   if (!chess.inCheck()) return null
 
-  const turn = chess.turn() // cor que está para jogar e está em xeque
+  const turn = chess.turn()
   const board = chess.board()
   for (const row of board) {
     for (const cell of row) {
@@ -41,12 +47,24 @@ function getCheckedKingSquare(fen: string): string | null {
   return null
 }
 
+// Retorna o mapa de casas válidas para mover a partir de `square`.
+function computeValidSquares(fen: string, square: string): Record<string, { isCapture: boolean }> {
+  const chess = new Chess(fen)
+  const moves = chess.moves({ square: square as Parameters<typeof chess.moves>[0]['square'], verbose: true })
+  const result: Record<string, { isCapture: boolean }> = {}
+  for (const m of moves) {
+    result[m.to] = { isCapture: !!m.captured }
+  }
+  return result
+}
+
 export function ChessBoard({
   fen,
   playerColor,
   makeMove,
   onMove,
   disabled = false,
+  theme,
 }: ChessBoardProps) {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
   const [validSquares, setValidSquares] = useState<Record<string, { isCapture: boolean }>>({})
@@ -54,6 +72,17 @@ export function ChessBoard({
   function clearHighlights() {
     setSelectedSquare(null)
     setValidSquares({})
+  }
+
+  // Centraliza a lógica de highlight — usada tanto no clique quanto no drag.
+  function showHighlights(square: string) {
+    const moves = computeValidSquares(fen, square)
+    if (Object.keys(moves).length === 0) {
+      clearHighlights()
+      return
+    }
+    setSelectedSquare(square)
+    setValidSquares(moves)
   }
 
   function handleSquareClick({ square }: SquareHandlerArgs) {
@@ -67,29 +96,21 @@ export function ChessBoard({
       return
     }
 
-    // Calcula os movimentos válidos a partir da casa clicada
-    const chess = new Chess(fen)
-    const moves = chess.moves({ square: square as Parameters<typeof chess.moves>[0]['square'], verbose: true })
+    showHighlights(square)
+  }
 
-    if (moves.length === 0) {
-      clearHighlights()
-      return
-    }
-
-    const newValidSquares: Record<string, { isCapture: boolean }> = {}
-    for (const m of moves) {
-      newValidSquares[m.to] = { isCapture: !!m.captured }
-    }
-
-    setSelectedSquare(square)
-    setValidSquares(newValidSquares)
+  // Ao começar a arrastar, exibe imediatamente as casas válidas.
+  function handlePieceDrag({ square }: PieceHandlerArgs) {
+    if (disabled || !square) return
+    showHighlights(square)
   }
 
   function handlePieceDrop({ sourceSquare, targetSquare }: PieceDropHandlerArgs): boolean {
+    // Limpa highlights sempre — inclusive quando o drag é cancelado (targetSquare null)
+    clearHighlights()
     if (disabled || !targetSquare) return false
 
     const move = makeMove(sourceSquare, targetSquare)
-    clearHighlights()
     if (!move) return false
 
     onMove(move)
@@ -117,9 +138,12 @@ export function ChessBoard({
         position: fen,
         boardOrientation: playerColor,
         onPieceDrop: handlePieceDrop,
+        onPieceDrag: handlePieceDrag,
         onSquareClick: handleSquareClick,
         allowDragging: !disabled,
         squareStyles,
+        ...(theme?.darkSquareStyle  && { darkSquareStyle:  theme.darkSquareStyle  }),
+        ...(theme?.lightSquareStyle && { lightSquareStyle: theme.lightSquareStyle }),
       }}
     />
   )
