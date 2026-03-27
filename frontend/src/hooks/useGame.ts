@@ -16,7 +16,7 @@ export function useGame(playerColor: PieceColor): UseGameReturn {
   // ao ser mutada — só os dados derivados (fen, moves, status) ficam em useState.
   const chessRef = useRef(new Chess())
 
-  const [fen, setFen] = useState(chessRef.current.fen())
+  const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
   const [moves, setMoves] = useState<GameMove[]>([])
   const [status, setStatus] = useState<GameStatus>('playing')
   const [isResigned, setIsResigned] = useState(false)

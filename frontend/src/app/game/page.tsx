@@ -93,13 +93,11 @@ function GameContent() {
   const { fen, makeMove, status, resign, moves } = useGame(colorParam)
   const [resignConfirm, setResignConfirm] = useState(false)
 
-  const [activeTheme, setActiveTheme] = useState<string>('classico')
-
-  // Carrega o tema salvo no localStorage após a montagem (client-only)
-  useEffect(() => {
+  const [activeTheme, setActiveTheme] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'classico'
     const saved = localStorage.getItem(THEME_STORAGE_KEY)
-    if (saved && saved in BOARD_THEMES) setActiveTheme(saved)
-  }, [])
+    return (saved && saved in BOARD_THEMES) ? saved : 'classico'
+  })
 
   // Persiste a partida no localStorage ao fim do jogo
   useEffect(() => {

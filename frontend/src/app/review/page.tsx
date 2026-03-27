@@ -12,7 +12,6 @@ import type {
   AnalysisResult,
   GameMove,
   MoveClassification,
-  MoveEvaluation,
   SavedGame,
 } from '@/types/game.types'
 
@@ -36,9 +35,17 @@ function MoveBadge({ classification }: { classification: MoveClassification }) {
 function ReviewContent() {
   const router = useRouter()
 
-  // --- Dados da partida ---
-  const [savedGame,   setSavedGame]   = useState<SavedGame | null>(null)
-  const [cachedResult, setCachedResult] = useState<AnalysisResult | null>(null)
+  // --- Dados da partida — lidos do localStorage na inicialização (client-only) ---
+  const [savedGame] = useState<SavedGame | null>(() => {
+    if (typeof window === 'undefined') return null
+    const raw = localStorage.getItem(STORAGE_GAME)
+    return raw ? (JSON.parse(raw) as SavedGame) : null
+  })
+  const [cachedResult, setCachedResult] = useState<AnalysisResult | null>(() => {
+    if (typeof window === 'undefined') return null
+    const raw = localStorage.getItem(STORAGE_ANALYSIS)
+    return raw ? (JSON.parse(raw) as AnalysisResult) : null
+  })
 
   // --- Estado de replay ---
   const [currentIndex, setCurrentIndex] = useState(0) // 0 = posição inicial
@@ -46,15 +53,10 @@ function ReviewContent() {
   // --- Estado de análise profunda ---
   const [deepAnalysisEnabled, setDeepAnalysisEnabled] = useState(false)
 
-  // Carrega dados do localStorage
+  // Redireciona para home se não houver partida salva
   useEffect(() => {
-    const gameRaw = localStorage.getItem(STORAGE_GAME)
-    if (!gameRaw) { router.push('/'); return }
-    setSavedGame(JSON.parse(gameRaw) as SavedGame)
-
-    const analysisRaw = localStorage.getItem(STORAGE_ANALYSIS)
-    if (analysisRaw) setCachedResult(JSON.parse(analysisRaw) as AnalysisResult)
-  }, [router])
+    if (!savedGame) router.push('/')
+  }, [savedGame, router])
 
   const moves = savedGame?.moves ?? []
   const fens  = [INITIAL_FEN, ...moves.map((m: GameMove) => m.fen)]
@@ -72,7 +74,9 @@ function ReviewContent() {
     const accuracy    = computeAccuracy(evaluations)
     const result: AnalysisResult = { evaluations, accuracy, date: new Date().toISOString() }
     localStorage.setItem(STORAGE_ANALYSIS, JSON.stringify(result))
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCachedResult(result)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDeepAnalysisEnabled(false)
   }, [deepReady]) // eslint-disable-line react-hooks/exhaustive-deps
 

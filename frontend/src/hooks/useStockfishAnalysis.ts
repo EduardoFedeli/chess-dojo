@@ -67,7 +67,7 @@ export function useStockfishAnalysis({
     const fen       = fens[indexRef.current]
     const isWhite   = fen.split(' ')[1] === 'w'
     // Guardamos para uso no handler de mensagem
-    ;(worker as any).__whiteToMove = isWhite
+    ;(worker as Worker & { __whiteToMove?: boolean }).__whiteToMove = isWhite
 
     worker.postMessage(`position fen ${fen}`)
     if (depth !== undefined) {
@@ -100,7 +100,7 @@ export function useStockfishAnalysis({
 
       // Captura o último score antes do bestmove
       if (line.startsWith('info') && line.includes('score')) {
-        const whiteToMove = (worker as any).__whiteToMove ?? true
+        const whiteToMove = (worker as Worker & { __whiteToMove?: boolean }).__whiteToMove ?? true
         const parsed = parseScore(line, whiteToMove)
         if (parsed !== null) lastScoreRef.current = parsed
         return
@@ -144,13 +144,13 @@ export function useStockfishAnalysis({
       return
     }
 
-    // Reset state
-    indexRef.current  = 0
-    scoresRef.current = []
+    // Reset state before starting a new analysis run
+    indexRef.current     = 0
+    scoresRef.current    = []
     lastScoreRef.current = 0
-    setScores([])
-    setProgress(0)
-    setIsAnalyzing(true)
+    setScores([])        // eslint-disable-line react-hooks/set-state-in-effect
+    setProgress(0)       // eslint-disable-line react-hooks/set-state-in-effect
+    setIsAnalyzing(true) // eslint-disable-line react-hooks/set-state-in-effect
 
     workerRef.current?.postMessage('ucinewgame')
     analyzeNext()
@@ -158,7 +158,7 @@ export function useStockfishAnalysis({
 
   // Disparo automático quando enabled muda para true
   useEffect(() => {
-    if (enabled) setTriggered(true)
+    if (enabled) setTriggered(true) // eslint-disable-line react-hooks/set-state-in-effect
   }, [enabled])
 
   return { scores, progress, isAnalyzing, startAnalysis }
