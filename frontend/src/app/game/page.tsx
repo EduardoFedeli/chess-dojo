@@ -156,7 +156,10 @@ function GameContent() {
   }, [analysisReady]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center p-8">
+    <main
+      className="relative flex h-screen overflow-hidden items-center justify-center p-4"
+      style={{ background: 'radial-gradient(ellipse at center, #1a0f0a 0%, #000000 100%)' }}
+    >
       {/* Wrapper: coluna única em mobile, duas colunas em desktop */}
       <div className="flex w-full max-w-[740px] flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
 
