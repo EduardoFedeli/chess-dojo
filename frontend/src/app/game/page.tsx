@@ -10,8 +10,12 @@ import { useGame } from '@/hooks/useGame'
 import { useStockfish } from '@/hooks/useStockfish'
 import { ChessBoard } from '@/components/board/ChessBoard'
 import type { BoardTheme } from '@/components/board/ChessBoard'
-import { Button } from '@/components/ui/button'
 import type { BotLevel, GameStatus, PieceColor } from '@/types/game.types'
+import { buildMovesString } from '@/utils/pgn-builder'
+import type { SavedGame } from '@/types/game.types'
+import { useStockfishAnalysis } from '@/hooks/useStockfishAnalysis'
+import { classifyMoves, computeAccuracy, CLASSIFICATION_META } from '@/utils/move-classifier'
+import type { AnalysisResult, MoveClassification } from '@/types/game.types'
 import { MoveHistory } from '@/components/game/MoveHistory'
 
 // Gera um "thud" curto via Web Audio API — sem arquivos externos.
@@ -75,6 +79,7 @@ const BOARD_THEMES: Record<string, { label: string; theme: BoardTheme }> = {
 }
 
 const THEME_STORAGE_KEY = 'chess-board-theme'
+const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
 function GameContent() {
   const router = useRouter()
@@ -96,6 +101,21 @@ function GameContent() {
     if (saved && saved in BOARD_THEMES) setActiveTheme(saved)
   }, [])
 
+  // Persiste a partida no localStorage ao fim do jogo
+  useEffect(() => {
+    if (status === 'playing' || moves.length === 0) return
+
+    const saved: SavedGame = {
+      pgn:         buildMovesString(moves),
+      botLevel:    botParam,
+      playerColor: colorParam,
+      result:      status,
+      date:        new Date().toISOString(),
+      moves,
+    }
+    localStorage.setItem('chess-dojo:last-game', JSON.stringify(saved))
+  }, [status]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleThemeChange(key: string) {
     setActiveTheme(key)
     localStorage.setItem(THEME_STORAGE_KEY, key)
@@ -110,6 +130,31 @@ function GameContent() {
   })
 
   const isGameOver = status !== 'playing'
+
+  const analysisFens = isGameOver
+    ? [INITIAL_FEN, ...moves.map(m => m.fen)]
+    : []
+
+  const { scores, progress, isAnalyzing } = useStockfishAnalysis({
+    fens:     analysisFens,
+    movetime: 300,
+    enabled:  isGameOver && moves.length > 0,
+  })
+
+  const analysisReady = !isAnalyzing && scores.length === analysisFens.length && analysisFens.length > 1
+  const evaluations   = analysisReady ? classifyMoves(scores, moves) : []
+  const accuracy      = analysisReady ? computeAccuracy(evaluations) : 0
+
+  // Persiste análise no localStorage quando concluída
+  useEffect(() => {
+    if (!analysisReady || evaluations.length === 0) return
+    const result: AnalysisResult = {
+      evaluations,
+      accuracy,
+      date: new Date().toISOString(),
+    }
+    localStorage.setItem('chess-dojo:last-analysis', JSON.stringify(result))
+  }, [analysisReady]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <main className="relative flex min-h-screen items-center justify-center p-8">
@@ -188,16 +233,85 @@ function GameContent() {
       {/* Overlay de fim de jogo */}
       {isGameOver && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-6 rounded-2xl bg-neutral-900 px-12 py-10 text-center shadow-2xl">
-            <p className="text-3xl font-bold text-white">
+          <div className="flex flex-col items-center gap-5 rounded-2xl bg-neutral-900 px-10 py-8 text-center shadow-2xl w-80">
+
+            {/* Resultado */}
+            <p className="text-2xl font-bold text-white">
               {GAME_OVER_MESSAGE[status]}
             </p>
-            <Button
-              onClick={() => router.push('/')}
-              className="rounded-xl bg-white px-8 py-5 text-base font-semibold text-black hover:bg-neutral-200"
-            >
-              Jogar novamente
-            </Button>
+
+            {/* Estado A: analisando */}
+            {isAnalyzing && (
+              <div className="w-full rounded-xl bg-neutral-800 px-4 py-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  Analisando partida...
+                </p>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-700">
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{
+                      width:      `${Math.round(progress * 100)}%`,
+                      background: 'linear-gradient(90deg, #6B8F71, #EE964B)',
+                    }}
+                  />
+                </div>
+                <p className="mt-1.5 text-xs text-neutral-500">
+                  {scores.length} / {analysisFens.length} posições
+                </p>
+              </div>
+            )}
+
+            {/* Estado B: análise concluída */}
+            {analysisReady && (
+              <>
+                {/* Precisão */}
+                <div
+                  className="rounded-lg px-6 py-2"
+                  style={{ background: '#6B8F7118', border: '1px solid #6B8F7144' }}
+                >
+                  <span className="text-sm text-neutral-400">Precisão: </span>
+                  <span className="text-xl font-black" style={{ color: '#6B8F71' }}>
+                    {accuracy}%
+                  </span>
+                </div>
+
+                {/* Grid de categorias */}
+                <div className="w-full rounded-xl bg-neutral-800 px-4 py-3">
+                  <div className="grid gap-x-4 gap-y-0.5 text-xs" style={{ gridTemplateColumns: '1fr auto' }}>
+                    {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map((key) => {
+                      const meta  = CLASSIFICATION_META[key]
+                      const count = evaluations.filter(e => e.classification === key).length
+                      return (
+                        <div key={key} className="contents">
+                          <span style={{ color: meta.color }}>{meta.emoji} {meta.label}</span>
+                          <span className="text-right font-bold" style={{ color: meta.color }}>{count}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Botões */}
+            <div className="flex w-full flex-col gap-2">
+              {analysisReady && (
+                <button
+                  onClick={() => router.push('/review')}
+                  className="w-full rounded-xl py-3 text-sm font-black tracking-wide transition-all hover:opacity-90"
+                  style={{ backgroundColor: '#6B8F71', color: '#000' }}
+                >
+                  📋 Revisão da Partida
+                </button>
+              )}
+              <button
+                onClick={() => router.push('/')}
+                className="w-full rounded-xl border border-neutral-700 py-3 text-sm font-semibold text-neutral-400 transition-all hover:border-neutral-500 hover:text-white"
+              >
+                Jogar novamente
+              </button>
+            </div>
+
           </div>
         </div>
       )}
