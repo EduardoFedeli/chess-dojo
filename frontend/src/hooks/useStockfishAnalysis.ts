@@ -50,6 +50,7 @@ export function useStockfishAnalysis({
 }: UseStockfishAnalysisOptions): UseStockfishAnalysisReturn {
   const workerRef    = useRef<Worker | null>(null)
   const isReadyRef   = useRef(false)
+  const [isReady,   setIsReady]   = useState(false)
   const indexRef     = useRef(0)            // índice do FEN em avaliação
   const lastScoreRef = useRef<number>(0)    // último score lido antes do bestmove
   const scoresRef    = useRef<number[]>([]) // scores acumulados
@@ -93,6 +94,7 @@ export function useStockfishAnalysis({
 
       if (line === 'readyok') {
         isReadyRef.current = true
+        setIsReady(true)
         return
       }
 
@@ -130,6 +132,7 @@ export function useStockfishAnalysis({
       worker.terminate()
       workerRef.current = null
       isReadyRef.current = false
+      setIsReady(false)
     }
   }, []) // worker criado uma única vez
 
@@ -137,9 +140,8 @@ export function useStockfishAnalysis({
   useEffect(() => {
     if (!enabled || !triggered || isAnalyzing || fens.length === 0) return
     if (!isReadyRef.current) {
-      // Ainda não pronto — tentar novamente em 200ms
-      const t = setTimeout(() => setTriggered(prev => prev), 200)
-      return () => clearTimeout(t)
+      // isReady state change will re-trigger this effect when worker is ready
+      return
     }
 
     // Reset state
@@ -152,7 +154,7 @@ export function useStockfishAnalysis({
 
     workerRef.current?.postMessage('ucinewgame')
     analyzeNext()
-  }, [enabled, triggered, isAnalyzing, fens, analyzeNext])
+  }, [enabled, triggered, isAnalyzing, isReady, fens, analyzeNext])
 
   // Disparo automático quando enabled muda para true
   useEffect(() => {
