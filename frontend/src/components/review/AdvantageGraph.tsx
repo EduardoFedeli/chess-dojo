@@ -6,8 +6,11 @@ import {
 } from 'recharts'
 
 type AdvantageGraphProps = {
+  /** N+1 scores em centipawns, perspectiva brancas. */
   scores: number[]
+  /** Índice da jogada atualmente exibida no tabuleiro (0 = posição inicial). */
   currentIndex: number
+  /** Chamado quando o usuário clica num ponto do gráfico. */
   onMoveClick: (index: number) => void
   /** Altura do gráfico em px. Padrão: 64. */
   height?: number
