@@ -26,6 +26,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 
 const SKILL_LEVEL: Record<BotLevel, number> = {
@@ -321,21 +327,34 @@ function GameContent() {
                   </span>
                 </div>
 
-                {/* Grid de categorias */}
-                <div className="w-full rounded-xl bg-neutral-800 px-4 py-3">
-                  <div className="grid gap-x-4 gap-y-0.5 text-xs" style={{ gridTemplateColumns: '1fr auto' }}>
-                    {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map((key) => {
-                      const meta  = CLASSIFICATION_META[key]
-                      const count = evaluations.filter(e => e.classification === key).length
-                      return (
-                        <div key={key} className="contents">
-                          <span style={{ color: meta.color }}>{meta.emoji} {meta.label}</span>
-                          <span className="text-right font-bold" style={{ color: meta.color }}>{count}</span>
-                        </div>
-                      )
-                    })}
+                {/* Grid de categorias com tooltip */}
+                <TooltipProvider delayDuration={300}>
+                  <div className="w-full rounded-xl bg-neutral-800 px-4 py-3">
+                    <div className="flex flex-col gap-y-1 text-xs">
+                      {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map((key) => {
+                        const meta  = CLASSIFICATION_META[key]
+                        const count = evaluations.filter(e => e.classification === key).length
+                        return (
+                          <Tooltip key={key}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="grid cursor-help"
+                                style={{ gridTemplateColumns: '20px 1fr 24px' }}
+                              >
+                                <span className="text-center leading-none">{meta.emoji}</span>
+                                <span style={{ color: meta.color }}>{meta.label}</span>
+                                <span className="text-right font-bold tabular-nums" style={{ color: meta.color }}>{count}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-48">
+                              <p className="text-xs">{meta.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
+                </TooltipProvider>
               </>
             )}
 
