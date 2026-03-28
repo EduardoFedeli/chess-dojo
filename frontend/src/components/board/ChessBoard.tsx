@@ -22,7 +22,7 @@ type ChessBoardProps = {
   // disabled bloqueia interação: usado durante turno do bot ou fim de jogo
   disabled?: boolean
   theme?: BoardTheme
-  customPieces?: Record<string, ({ squareWidth }: { squareWidth: number }) => React.ReactElement>
+  customPieces?: Record<string, (props?: { fill?: string; square?: string; svgStyle?: React.CSSProperties }) => React.JSX.Element>
   animationDuration?: number
 }
 
@@ -189,7 +189,7 @@ export function ChessBoard({
           animationDurationInMs: animationDuration,
           ...(theme?.darkSquareStyle  && { darkSquareStyle:  theme.darkSquareStyle  }),
           ...(theme?.lightSquareStyle && { lightSquareStyle: theme.lightSquareStyle }),
-          ...(customPieces            && { customPieces }),
+          ...(customPieces            && { pieces: customPieces }),
         }}
       />
 

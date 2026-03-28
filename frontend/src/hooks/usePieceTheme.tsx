@@ -1,13 +1,12 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 const PIECE_KEYS = [
   'wP', 'wN', 'wB', 'wR', 'wQ', 'wK',
   'bP', 'bN', 'bB', 'bR', 'bQ', 'bK',
 ] as const
 
-type PieceKey = typeof PIECE_KEYS[number]
-type PieceComponent = ({ squareWidth }: { squareWidth: number }) => React.ReactElement
-type CustomPieces = Record<PieceKey, PieceComponent>
+type PieceRenderFn = (props?: { fill?: string; square?: string; svgStyle?: React.CSSProperties }) => React.JSX.Element
+type CustomPieces = Record<string, PieceRenderFn>
 
 export const PIECE_THEMES: Record<string, string> = {
   cburnett:  'Lichess',
@@ -39,16 +38,14 @@ function buildPieces(theme: string): CustomPieces {
   return Object.fromEntries(
     PIECE_KEYS.map((key) => [
       key,
-      function PieceImg({ squareWidth }: { squareWidth: number }) {
+      function PieceImg() {
         return (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={`/piece/${theme}/${key}.svg`}
-            width={squareWidth}
-            height={squareWidth}
+            style={{ width: '100%', height: '100%', userSelect: 'none' }}
             alt={key}
             draggable={false}
-            style={{ userSelect: 'none' }}
           />
         )
       },
