@@ -29,8 +29,8 @@ export function MoveHistory({ moves }: MoveHistoryProps) {
 
   return (
     <div
-      className="flex h-full flex-col overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950"
-      style={{ width: 160, padding: '10px 12px' }}
+      className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950"
+      style={{ padding: '10px 12px' }}
     >
       {/* Cabeçalho — fixo */}
       <p className="mb-2 shrink-0 text-[10px] font-bold uppercase tracking-widest text-neutral-500">

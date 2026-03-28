@@ -94,6 +94,11 @@ function GameContent() {
   const { fen, makeMove, status, resign, moves } = useGame(colorParam)
   const [resignConfirm, setResignConfirm] = useState(false)
 
+  const [boardSize, setBoardSize] = useState(500)
+  useEffect(() => {
+    setBoardSize(Math.min(window.innerHeight - 120, 700))
+  }, [])
+
   const [activeTheme, setActiveTheme] = useState<string>(() => {
     if (typeof window === 'undefined') return 'classico'
     const saved = localStorage.getItem(THEME_STORAGE_KEY)
@@ -161,14 +166,14 @@ function GameContent() {
   return (
     <main
       className="relative flex h-screen overflow-hidden items-center justify-center p-4"
-      style={{ background: 'radial-gradient(ellipse at center, #1a0f0a 0%, #000000 100%)' }}
+      style={{ background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)' }}
     >
-      {/* Wrapper: coluna única em mobile, duas colunas em desktop */}
-      <div className="flex w-full max-w-[740px] flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+      {/* Wrapper: tabuleiro + painel lado a lado */}
+      <div className="flex items-start gap-6">
 
         {/* Coluna esquerda: tabuleiro + controles */}
-        <div className="flex flex-col gap-4" style={{ width: 500, flexShrink: 0 }}>
-          <div style={{ width: 500, height: 500 }}>
+        <div className="flex flex-col gap-4" style={{ width: boardSize, flexShrink: 0 }}>
+          <div style={{ width: boardSize, height: boardSize }}>
             <ChessBoard
               fen={fen}
               playerColor={colorParam}
@@ -232,7 +237,7 @@ function GameContent() {
         </div>
 
         {/* Coluna direita: painel de histórico — altura igual ao tabuleiro, scroll interno */}
-        <div className="sm:flex sm:flex-col" style={{ height: 500 }}>
+        <div style={{ width: 280, height: boardSize, flexShrink: 0 }}>
           <MoveHistory moves={moves} />
         </div>
       </div>
