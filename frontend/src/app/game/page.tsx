@@ -168,7 +168,7 @@ function GameContent() {
   useEffect(() => {
     const last = moves[moves.length - 1]
     if (last?.isCheck && !last.isCheckmate) playCheckSound()
-  }, [moves]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [moves])
 
   // Som de fim de jogo: dispara uma vez quando o status muda para fora de 'playing'
   useEffect(() => {
