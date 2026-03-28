@@ -18,29 +18,8 @@ import { classifyMoves, computeAccuracy, CLASSIFICATION_META } from '@/utils/mov
 import type { AnalysisResult, MoveClassification } from '@/types/game.types'
 import { MoveHistory } from '@/components/game/MoveHistory'
 import { usePieceTheme } from '@/hooks/usePieceTheme'
+import { playMoveSound, playCaptureSound, playCheckSound, playGameEndSound } from '@/utils/sound'
 
-// Gera um "thud" curto via Web Audio API — sem arquivos externos.
-// Usa um oscilador de baixa frequência com queda rápida de amplitude.
-function playCaptureSound() {
-  if (typeof window === 'undefined') return
-  const ctx = new AudioContext()
-  const osc = ctx.createOscillator()
-  const gain = ctx.createGain()
-
-  osc.connect(gain)
-  gain.connect(ctx.destination)
-
-  osc.type = 'sine'
-  osc.frequency.setValueAtTime(120, ctx.currentTime)
-  osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.12)
-
-  gain.gain.setValueAtTime(0.6, ctx.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
-
-  osc.start(ctx.currentTime)
-  osc.stop(ctx.currentTime + 0.15)
-  osc.onended = () => ctx.close()
-}
 
 const SKILL_LEVEL: Record<BotLevel, number> = {
   iniciante: 2,
@@ -82,6 +61,17 @@ function GameContent() {
   useEffect(() => {
     setBoardSize(Math.min(window.innerHeight - 120, 700))
   }, [])
+
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('chess-dojo:sound-enabled') !== 'false'
+  })
+
+  function handleSoundToggle() {
+    const next = !soundEnabled
+    setSoundEnabled(next)
+    localStorage.setItem('chess-dojo:sound-enabled', String(next))
+  }
 
   const [activeTheme, setActiveTheme] = useState<string>(() => {
     if (typeof window === 'undefined') return 'classico'
@@ -149,6 +139,17 @@ function GameContent() {
     localStorage.setItem('chess-dojo:last-analysis', JSON.stringify(result))
   }, [analysisReady]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Som de xeque: dispara quando a última jogada é xeque mas não xeque-mate
+  useEffect(() => {
+    const last = moves[moves.length - 1]
+    if (last?.isCheck && !last.isCheckmate) playCheckSound()
+  }, [moves]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Som de fim de jogo: dispara uma vez quando o status muda para fora de 'playing'
+  useEffect(() => {
+    if (status !== 'playing') playGameEndSound()
+  }, [status])
+
   return (
     <main
       className="relative flex h-screen overflow-hidden items-center justify-center p-4"
@@ -164,7 +165,10 @@ function GameContent() {
               fen={fen}
               playerColor={colorParam}
               makeMove={makeMove}
-              onMove={(move) => { if (move.isCapture) playCaptureSound() }}
+              onMove={(move) => {
+                playMoveSound()
+                if (move.isCapture) playCaptureSound()
+              }}
               disabled={isBotThinking || isGameOver}
               theme={BOARD_THEMES[activeTheme].theme}
               customPieces={customPieces}
