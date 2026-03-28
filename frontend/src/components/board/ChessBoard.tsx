@@ -23,6 +23,7 @@ type ChessBoardProps = {
   disabled?: boolean
   theme?: BoardTheme
   customPieces?: Record<string, ({ squareWidth }: { squareWidth: number }) => React.ReactElement>
+  animationDuration?: number
 }
 
 type PendingPromotion = { from: string; to: string; color: 'w' | 'b' }
@@ -86,6 +87,7 @@ export function ChessBoard({
   disabled = false,
   theme,
   customPieces,
+  animationDuration = 300,
 }: ChessBoardProps) {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
   const [validSquares, setValidSquares] = useState<Record<string, { isCapture: boolean }>>({})
@@ -184,6 +186,7 @@ export function ChessBoard({
           onSquareClick: handleSquareClick,
           allowDragging: !disabled && !pendingPromotion,
           squareStyles,
+          animationDurationInMs: animationDuration,
           ...(theme?.darkSquareStyle  && { darkSquareStyle:  theme.darkSquareStyle  }),
           ...(theme?.lightSquareStyle && { lightSquareStyle: theme.lightSquareStyle }),
           ...(customPieces            && { customPieces }),

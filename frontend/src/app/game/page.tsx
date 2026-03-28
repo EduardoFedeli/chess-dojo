@@ -122,6 +122,9 @@ function GameContent() {
 
   const isGameOver = status !== 'playing'
 
+  const lastMoveColor = moves[moves.length - 1]?.color
+  const animDuration  = lastMoveColor && lastMoveColor !== colorParam ? 400 : 300
+
   const analysisFens = useMemo(
     () => isGameOver ? [INITIAL_FEN, ...moves.map(m => m.fen)] : [],
     [isGameOver, moves]
@@ -199,6 +202,7 @@ function GameContent() {
               disabled={isBotThinking || isGameOver}
               theme={BOARD_THEMES[activeTheme].theme}
               customPieces={customPieces}
+              animationDuration={animDuration}
             />
           </div>
 
