@@ -1,8 +1,8 @@
 'use client'
 
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, ReferenceLine,
+  AreaChart, Area, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, ReferenceLine, ReferenceDot,
 } from 'recharts'
 
 type AdvantageGraphProps = {
@@ -17,59 +17,70 @@ type AdvantageGraphProps = {
 }
 
 export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 }: AdvantageGraphProps) {
-  const data = scores.map((s, i) => ({
-    index: i,
-    score: Math.max(-5, Math.min(5, s / 100)), // clamp ±5 pawns
-  }))
+  const data = scores.map((s, i) => {
+    const clamped = Math.max(-5, Math.min(5, s / 100))
+    return {
+      index: i,
+      scorePos: Math.max(0, clamped),
+      scoreNeg: Math.min(0, clamped),
+      score: clamped,
+    }
+  })
 
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-3">
+    <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-3">
       <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-neutral-500">
         Vantagem
       </p>
       <ResponsiveContainer width="100%" height={height}>
-        <LineChart
+        <AreaChart
           data={data}
           onClick={(e) => {
-            if (e?.activeIndex != null) {
-              onMoveClick(Number(e.activeIndex))
-            }
+            if (e?.activeIndex != null) onMoveClick(Number(e.activeIndex))
           }}
           style={{ cursor: 'pointer' }}
         >
-          <ReferenceLine y={0} stroke="#2a2a2a" strokeWidth={1} />
+          <ReferenceLine y={0} stroke="#3a3a3a" strokeWidth={1} />
           <YAxis domain={[-5, 5]} hide />
           <XAxis dataKey="index" hide />
           <Tooltip
             contentStyle={{ background: '#111', border: '1px solid #333', fontSize: 10 }}
-            formatter={(v) => {
+            formatter={(v: unknown) => {
               const n = Number(v)
+              if (n === 0) return null
               return [`${n > 0 ? '+' : ''}${n.toFixed(2)}`, 'Vantagem']
             }}
             labelFormatter={(i) => `Jogada ${i}`}
           />
-          <Line
+          <Area
             type="monotone"
-            dataKey="score"
-            stroke="#e5e7eb"
-            strokeWidth={1.5}
-            dot={(props) => {
-              const isActive = props.index === currentIndex
-              if (!isActive) return <g key={props.index} />
-              return (
-                <circle
-                  key={props.index}
-                  cx={props.cx}
-                  cy={props.cy}
-                  r={4}
-                  fill="#EE964B"
-                  stroke="#000"
-                  strokeWidth={1}
-                />
-              )
-            }}
+            dataKey="scorePos"
+            baseValue={0}
+            fill="#1a1a1a"
+            stroke="none"
+            dot={false}
+            isAnimationActive={false}
           />
-        </LineChart>
+          <Area
+            type="monotone"
+            dataKey="scoreNeg"
+            baseValue={0}
+            fill="#e5e7eb"
+            stroke="none"
+            dot={false}
+            isAnimationActive={false}
+          />
+          {data[currentIndex] && (
+            <ReferenceDot
+              x={currentIndex}
+              y={data[currentIndex].score}
+              r={4}
+              fill="#EE964B"
+              stroke="#000"
+              strokeWidth={1}
+            />
+          )}
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   )
