@@ -19,6 +19,13 @@ import type { AnalysisResult, MoveClassification } from '@/types/game.types'
 import { MoveHistory } from '@/components/game/MoveHistory'
 import { usePieceTheme } from '@/hooks/usePieceTheme'
 import { playMoveSound, playCaptureSound, playCheckSound, playGameEndSound } from '@/utils/sound'
+import { Settings } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 
 const SKILL_LEVEL: Record<BotLevel, number> = {
@@ -72,6 +79,8 @@ function GameContent() {
     setSoundEnabled(next)
     localStorage.setItem('chess-dojo:sound-enabled', String(next))
   }
+
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const [activeTheme, setActiveTheme] = useState<string>(() => {
     if (typeof window === 'undefined') return 'classico'
@@ -155,6 +164,16 @@ function GameContent() {
       className="relative flex h-screen overflow-hidden items-center justify-center p-4"
       style={{ background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)' }}
     >
+      {/* Botão de configurações */}
+      <button
+        onClick={() => setSettingsOpen(true)}
+        className="absolute top-4 right-4 rounded-lg border border-neutral-700 p-2 text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white"
+        title="Configurações"
+        aria-label="Abrir configurações"
+      >
+        <Settings size={18} />
+      </button>
+
       {/* Wrapper: tabuleiro + painel lado a lado */}
       <div className="flex items-start gap-6">
 
@@ -317,6 +336,71 @@ function GameContent() {
           </div>
         </div>
       )}
+      {/* Modal de configurações */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent
+          className="sm:max-w-sm"
+          style={{ background: '#111', border: '1px solid #2a2a2a', color: '#e5e7eb' }}
+        >
+          <DialogHeader>
+            <DialogTitle style={{ color: '#FFFBFC' }}>Configurações</DialogTitle>
+          </DialogHeader>
+
+          {/* Tema do tabuleiro */}
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+              Tema do tabuleiro
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(BOARD_THEMES).map(([key, { label, theme }]) => {
+                const isActive = activeTheme === key
+                return (
+                  <button
+                    key={key}
+                    title={label}
+                    onClick={() => { handleThemeChange(key); setSettingsOpen(false) }}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <div
+                      className="flex overflow-hidden rounded border-2 transition-colors"
+                      style={{ borderColor: isActive ? '#EE964B' : 'transparent' }}
+                    >
+                      <span className="block h-6 w-6" style={theme.lightSquareStyle} />
+                      <span className="block h-6 w-6" style={theme.darkSquareStyle} />
+                    </div>
+                    <span className="text-[9px] text-neutral-500">{label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Som */}
+          <div className="flex items-center justify-between rounded-lg border border-neutral-800 px-4 py-3">
+            <span className="text-sm text-neutral-300">Sons de movimento</span>
+            <button
+              onClick={handleSoundToggle}
+              className="flex h-6 w-11 items-center rounded-full border transition-colors"
+              style={{
+                backgroundColor: soundEnabled ? '#EE964B' : '#2a2a2a',
+                borderColor:     soundEnabled ? '#EE964B' : '#444',
+              }}
+              aria-label={soundEnabled ? 'Desativar sons' : 'Ativar sons'}
+            >
+              <span
+                className="block h-5 w-5 rounded-full bg-white shadow transition-transform"
+                style={{ transform: soundEnabled ? 'translateX(20px)' : 'translateX(2px)' }}
+              />
+            </button>
+          </div>
+
+          {/* Peças — placeholder para futura expansão */}
+          <div className="flex items-center justify-between rounded-lg border border-neutral-800 px-4 py-3 opacity-40">
+            <span className="text-sm text-neutral-500">Estilo de peças</span>
+            <span className="text-xs text-neutral-600">Em breve</span>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
