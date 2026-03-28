@@ -56,30 +56,14 @@ const GAME_OVER_MESSAGE: Record<Exclude<GameStatus, 'playing'>, string> = {
 
 // Temas de tabuleiro: dois quadrados de preview + estilos passados ao Chessboard
 const BOARD_THEMES: Record<string, { label: string; theme: BoardTheme }> = {
-  classico: {
-    label: 'Clássico',
-    theme: {
-      lightSquareStyle: { backgroundColor: '#F0D9B5' },
-      darkSquareStyle:  { backgroundColor: '#B58863' },
-    },
-  },
-  esmeralda: {
-    label: 'Esmeralda',
-    theme: {
-      lightSquareStyle: { backgroundColor: '#FFFFDD' },
-      darkSquareStyle:  { backgroundColor: '#6B8F71' },
-    },
-  },
-  noite: {
-    label: 'Noite',
-    theme: {
-      lightSquareStyle: { backgroundColor: '#DEE3E6' },
-      darkSquareStyle:  { backgroundColor: '#8CA2AD' },
-    },
-  },
+  classico:  { label: 'Clássico',  theme: { lightSquareStyle: { backgroundColor: '#F0D9B5' }, darkSquareStyle: { backgroundColor: '#B58863' } } },
+  esmeralda: { label: 'Esmeralda', theme: { lightSquareStyle: { backgroundColor: '#FFFFDD' }, darkSquareStyle: { backgroundColor: '#6B8F71' } } },
+  noite:     { label: 'Noite',     theme: { lightSquareStyle: { backgroundColor: '#DEE3E6' }, darkSquareStyle: { backgroundColor: '#8CA2AD' } } },
+  marrom:    { label: 'Marrom',    theme: { lightSquareStyle: { backgroundColor: '#EDD6A1' }, darkSquareStyle: { backgroundColor: '#813405' } } },
+  ardosia:   { label: 'Ardósia',   theme: { lightSquareStyle: { backgroundColor: '#C8C9C5' }, darkSquareStyle: { backgroundColor: '#4A4A4A' } } },
 }
 
-const THEME_STORAGE_KEY = 'chess-board-theme'
+const THEME_STORAGE_KEY = 'chess-dojo:board-theme'
 const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
 function GameContent() {
@@ -101,7 +85,9 @@ function GameContent() {
 
   const [activeTheme, setActiveTheme] = useState<string>(() => {
     if (typeof window === 'undefined') return 'classico'
+    // Migra da chave anterior 'chess-board-theme' se a nova ainda não existir
     const saved = localStorage.getItem(THEME_STORAGE_KEY)
+      ?? localStorage.getItem('chess-board-theme')
     return (saved && saved in BOARD_THEMES) ? saved : 'classico'
   })
 
