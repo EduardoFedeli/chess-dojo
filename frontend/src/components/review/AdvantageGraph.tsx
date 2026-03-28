@@ -40,7 +40,6 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 
           }}
           style={{ cursor: 'pointer' }}
         >
-          <ReferenceLine y={0} stroke="#3a3a3a" strokeWidth={1} />
           <YAxis domain={[-5, 5]} hide />
           <XAxis dataKey="index" hide />
           <Tooltip
@@ -56,20 +55,23 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 
             type="monotone"
             dataKey="scorePos"
             baseValue={0}
-            fill="#1a1a1a"
+            fill="#e5e7eb"
             stroke="none"
             dot={false}
             isAnimationActive={false}
+            name="Vantagem"
           />
           <Area
             type="monotone"
             dataKey="scoreNeg"
             baseValue={0}
-            fill="#e5e7eb"
+            fill="#1a1a1a"
             stroke="none"
             dot={false}
             isAnimationActive={false}
+            name="Vantagem"
           />
+          <ReferenceLine y={0} stroke="#3a3a3a" strokeWidth={1} />
           {data[currentIndex] && (
             <ReferenceDot
               x={currentIndex}
