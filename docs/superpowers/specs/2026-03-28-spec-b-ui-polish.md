@@ -149,7 +149,7 @@ import {
 // No JSX do popup (substituindo o grid atual):
 <TooltipProvider delayDuration={300}>
   <div className="w-full rounded-xl bg-neutral-800 px-4 py-3">
-    <div className="grid gap-y-1 text-xs" style={{ gridTemplateColumns: '20px 1fr 24px' }}>
+    <div className="flex flex-col gap-y-1 text-xs">
       {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map((key) => {
         const meta  = CLASSIFICATION_META[key]
         const count = evaluations.filter(e => e.classification === key).length
@@ -157,7 +157,7 @@ import {
           <Tooltip key={key}>
             <TooltipTrigger asChild>
               <div
-                className="col-span-3 grid cursor-help"
+                className="grid cursor-help"
                 style={{ gridTemplateColumns: '20px 1fr 24px' }}
               >
                 <span className="text-center leading-none">{meta.emoji}</span>
