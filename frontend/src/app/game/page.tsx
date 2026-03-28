@@ -185,8 +185,8 @@ function GameContent() {
               playerColor={colorParam}
               makeMove={makeMove}
               onMove={(move) => {
-                playMoveSound()
                 if (move.isCapture) playCaptureSound()
+                else playMoveSound()
               }}
               disabled={isBotThinking || isGameOver}
               theme={BOARD_THEMES[activeTheme].theme}
