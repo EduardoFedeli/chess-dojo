@@ -17,7 +17,7 @@ import { useStockfishAnalysis } from '@/hooks/useStockfishAnalysis'
 import { classifyMoves, computeAccuracy, CLASSIFICATION_META } from '@/utils/move-classifier'
 import type { AnalysisResult, MoveClassification } from '@/types/game.types'
 import { MoveHistory } from '@/components/game/MoveHistory'
-import { usePieceTheme } from '@/hooks/usePieceTheme'
+import { usePieceTheme, PIECE_THEMES } from '@/hooks/usePieceTheme'
 import { playMoveSound, playCaptureSound, playCheckSound, playGameEndSound } from '@/utils/sound'
 import { Settings } from 'lucide-react'
 import {
@@ -110,7 +110,7 @@ function GameContent() {
     localStorage.setItem(THEME_STORAGE_KEY, key)
   }
 
-  const { customPieces } = usePieceTheme()
+  const { customPieces, activeTheme: activePieceTheme, setTheme: setPieceTheme } = usePieceTheme()
 
   const { isBotThinking } = useStockfish({
     skillLevel,
@@ -283,7 +283,7 @@ function GameContent() {
 
             {/* Resultado */}
             <p className="text-2xl font-bold text-white">
-              {GAME_OVER_MESSAGE[status]}
+              {GAME_OVER_MESSAGE[status as Exclude<GameStatus, 'playing'>]}
             </p>
 
             {/* Estado A: analisando */}
@@ -419,10 +419,32 @@ function GameContent() {
             </button>
           </div>
 
-          {/* Peças — placeholder para futura expansão */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-800 px-4 py-3 opacity-40">
-            <span className="text-sm text-neutral-500">Estilo de peças</span>
-            <span className="text-xs text-neutral-600">Em breve</span>
+          {/* Estilo de peças */}
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+              Estilo de peças
+            </p>
+            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
+              {Object.entries(PIECE_THEMES).map(([key, label]) => {
+                const isActive = activePieceTheme === key
+                return (
+                  <button
+                    key={key}
+                    title={label}
+                    onClick={() => setPieceTheme(key)}
+                    className="flex flex-col items-center gap-1 rounded-lg p-1.5 transition-colors"
+                    style={{
+                      border: `2px solid ${isActive ? '#EE964B' : 'transparent'}`,
+                      background: isActive ? '#EE964B18' : '#1a1a1a',
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/piece/${key}/wK.svg`} width={32} height={32} alt={label} draggable={false} />
+                    <span className="text-[8px] text-neutral-400">{label}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
