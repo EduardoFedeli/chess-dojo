@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import type { Bot, BotLevel, PieceColor } from '@/types/game.types'
 
@@ -10,17 +11,16 @@ const BOTS: Bot[] = [
   { id: 'mestre',    name: 'Mestre',    level: 'mestre',    skillLevel: 20, description: 'Sem piedade'             },
 ]
 
-const BOT_EMOJI: Record<BotLevel, string> = {
-  iniciante: '🐣',
-  guerreiro: '⚔️',
-  mestre:    '🏆',
+const BOT_STARS: Record<BotLevel, number> = {
+  iniciante: 1,
+  guerreiro: 2,
+  mestre:    3,
 }
 
-// Cor da borda de destaque por bot — usa a paleta do projeto
 const BOT_ACCENT: Record<BotLevel, string> = {
-  iniciante: '#6B8F71',  // verde
-  guerreiro: '#EE964B',  // laranja
-  mestre:    '#813405',  // marrom
+  iniciante: '#6B8F71',
+  guerreiro: '#EE964B',
+  mestre:    '#813405',
 }
 
 export default function Home() {
@@ -55,26 +55,55 @@ export default function Home() {
       <div className="flex flex-col gap-4 sm:flex-row">
         {BOTS.map((bot) => {
           const isSelected = selectedBot === bot.level
-          const accent = BOT_ACCENT[bot.level]
+          const accent     = BOT_ACCENT[bot.level]
+          const stars      = BOT_STARS[bot.level]
           return (
             <button
               key={bot.id}
               onClick={() => setSelectedBot(bot.level)}
               style={{
-                borderColor: isSelected ? accent : 'transparent',
-                boxShadow: isSelected ? `0 0 0 1px ${accent}, 0 0 20px ${accent}33` : undefined,
+                borderColor:     isSelected ? accent : 'transparent',
+                boxShadow:       isSelected ? `0 0 0 1px ${accent}, 0 0 20px ${accent}33` : undefined,
                 backgroundColor: isSelected ? `${accent}18` : '#111111',
                 outline: 'none',
               }}
-              className="flex w-52 flex-col items-center gap-2 rounded-2xl border-2 px-6 py-8 text-center transition-all hover:border-neutral-600"
+              className="flex w-52 flex-col items-center gap-3 rounded-2xl border-2 px-6 py-6 text-center transition-all hover:border-neutral-600"
             >
-              <span className="text-4xl">{BOT_EMOJI[bot.level]}</span>
+              {/* Avatar */}
+              <div
+                className="overflow-hidden rounded-full"
+                style={{
+                  width: 80, height: 80,
+                  boxShadow: isSelected ? `0 0 12px ${accent}55` : '0 2px 8px rgba(0,0,0,0.5)',
+                }}
+              >
+                <Image
+                  src={`/bots/${bot.id}.png`}
+                  alt={bot.name}
+                  width={80}
+                  height={80}
+                  className="object-cover"
+                />
+              </div>
+
+              {/* Name */}
               <span
                 className="text-lg font-bold tracking-wide"
                 style={{ color: isSelected ? accent : 'var(--brand-text)' }}
               >
                 {bot.name}
               </span>
+
+              {/* Stars */}
+              <div className="flex gap-0.5">
+                {[1, 2, 3].map((n) => (
+                  <span key={n} style={{ color: n <= stars ? '#EE964B' : '#374151', fontSize: 14 }}>
+                    ★
+                  </span>
+                ))}
+              </div>
+
+              {/* Description */}
               <span className="text-sm" style={{ color: '#9ca3af' }}>
                 {bot.description}
               </span>
