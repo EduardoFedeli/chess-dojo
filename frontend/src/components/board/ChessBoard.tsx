@@ -19,6 +19,7 @@ type ChessBoardProps = {
   playerColor: PieceColor
   makeMove: (from: string, to: string, promotion?: string) => GameMove | null
   onMove: (move: GameMove) => void
+  // disabled bloqueia interação: usado durante turno do bot ou fim de jogo
   disabled?: boolean
   theme?: BoardTheme
   customPieces?: Record<string, ({ squareWidth }: { squareWidth: number }) => React.ReactElement>
