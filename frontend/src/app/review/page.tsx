@@ -14,6 +14,7 @@ import type {
   MoveClassification,
   SavedGame,
 } from '@/types/game.types'
+import { usePieceTheme } from '@/hooks/usePieceTheme'
 
 const INITIAL_FEN    = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 const STORAGE_GAME   = 'chess-dojo:last-game'
@@ -52,6 +53,8 @@ function ReviewContent() {
     const raw = localStorage.getItem(STORAGE_ANALYSIS)
     return raw ? (JSON.parse(raw) as AnalysisResult) : null
   })
+
+  const { customPieces } = usePieceTheme()
 
   // --- Estado de replay ---
   const [currentIndex, setCurrentIndex] = useState(0) // 0 = posição inicial
@@ -169,6 +172,7 @@ function ReviewContent() {
                 makeMove={(_from: string, _to: string) => null}
                 onMove={() => {}}
                 disabled={true}
+                customPieces={customPieces}
               />
             </div>
 

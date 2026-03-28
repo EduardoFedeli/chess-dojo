@@ -17,6 +17,7 @@ import { useStockfishAnalysis } from '@/hooks/useStockfishAnalysis'
 import { classifyMoves, computeAccuracy, CLASSIFICATION_META } from '@/utils/move-classifier'
 import type { AnalysisResult, MoveClassification } from '@/types/game.types'
 import { MoveHistory } from '@/components/game/MoveHistory'
+import { usePieceTheme } from '@/hooks/usePieceTheme'
 
 // Gera um "thud" curto via Web Audio API — sem arquivos externos.
 // Usa um oscilador de baixa frequência com queda rápida de amplitude.
@@ -119,6 +120,8 @@ function GameContent() {
     localStorage.setItem(THEME_STORAGE_KEY, key)
   }
 
+  const { customPieces } = usePieceTheme()
+
   const { isBotThinking } = useStockfish({
     skillLevel,
     fen,
@@ -173,6 +176,7 @@ function GameContent() {
               onMove={(move) => { if (move.isCapture) playCaptureSound() }}
               disabled={isBotThinking || isGameOver}
               theme={BOARD_THEMES[activeTheme].theme}
+              customPieces={customPieces}
             />
           </div>
 

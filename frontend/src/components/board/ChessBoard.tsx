@@ -19,9 +19,9 @@ type ChessBoardProps = {
   playerColor: PieceColor
   makeMove: (from: string, to: string, promotion?: string) => GameMove | null
   onMove: (move: GameMove) => void
-  // disabled bloqueia interação: usado durante turno do bot ou fim de jogo
   disabled?: boolean
   theme?: BoardTheme
+  customPieces?: Record<string, ({ squareWidth }: { squareWidth: number }) => React.ReactElement>
 }
 
 type PendingPromotion = { from: string; to: string; color: 'w' | 'b' }
@@ -84,6 +84,7 @@ export function ChessBoard({
   onMove,
   disabled = false,
   theme,
+  customPieces,
 }: ChessBoardProps) {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
   const [validSquares, setValidSquares] = useState<Record<string, { isCapture: boolean }>>({})
@@ -184,6 +185,7 @@ export function ChessBoard({
           squareStyles,
           ...(theme?.darkSquareStyle  && { darkSquareStyle:  theme.darkSquareStyle  }),
           ...(theme?.lightSquareStyle && { lightSquareStyle: theme.lightSquareStyle }),
+          ...(customPieces            && { customPieces }),
         }}
       />
 
