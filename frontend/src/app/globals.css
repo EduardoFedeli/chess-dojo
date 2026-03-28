@@ -133,6 +133,7 @@
     background: radial-gradient(ellipse at 20% 0%, #1a1208 0%, #0d0d0d 45%, #000000 100%);
     background-attachment: fixed;
     min-height: 100vh;
+    font-family: var(--font-body), sans-serif;
   }
   html {
     @apply font-sans;

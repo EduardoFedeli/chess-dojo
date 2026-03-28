@@ -42,7 +42,7 @@ export default function Home() {
       <div className="text-center">
         <h1
           className="text-5xl font-black tracking-tight"
-          style={{ color: 'var(--brand-text)' }}
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--brand-text)' }}
         >
           ♟ Chess Dojo
         </h1>
