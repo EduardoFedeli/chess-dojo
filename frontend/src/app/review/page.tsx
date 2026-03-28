@@ -62,6 +62,11 @@ function ReviewContent() {
   // --- Estado de análise profunda ---
   const [deepAnalysisEnabled, setDeepAnalysisEnabled] = useState(false)
 
+  const [boardSize, setBoardSize] = useState(500)
+  useEffect(() => {
+    setBoardSize(Math.min(window.innerHeight - 120, 700))
+  }, [])
+
   // Redireciona para home se não houver partida salva
   useEffect(() => {
     if (!savedGame) router.push('/')
@@ -143,7 +148,7 @@ function ReviewContent() {
   return (
     <main
       className="flex h-screen flex-col gap-3 overflow-hidden p-4"
-      style={{ color: '#e5e7eb', background: 'radial-gradient(ellipse at center, #0d1a0f 0%, #000000 100%)' }}
+      style={{ color: '#e5e7eb', background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)' }}
     >
       {/* Botão voltar */}
       <div className="shrink-0">
@@ -161,11 +166,11 @@ function ReviewContent() {
         {/* ESQUERDA: barra de vantagem + tabuleiro + controles */}
         <div className="flex shrink-0 items-start gap-2">
           {graphScores.length > 0 && (
-            <AdvantageBar scoreCp={currentScore} height={500} />
+            <AdvantageBar scoreCp={currentScore} height={boardSize} />
           )}
           <div className="flex flex-col gap-3">
             {/* Tabuleiro read-only */}
-            <div style={{ width: 500, height: 500 }}>
+            <div style={{ width: boardSize, height: boardSize }}>
               <ChessBoard
                 fen={currentFen}
                 playerColor={savedGame.playerColor}
@@ -197,8 +202,8 @@ function ReviewContent() {
           </div>
         </div>
 
-        {/* DIREITA: painel de análise — flex-1 com scroll interno na lista */}
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
+        {/* DIREITA: painel de análise — 320px fixo com scroll interno na lista */}
+        <div className="flex min-h-0 flex-col gap-3" style={{ width: 320, maxWidth: 320, flexShrink: 0 }}>
 
           {/* Cabeçalho horizontal */}
           <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3">
@@ -260,6 +265,7 @@ function ReviewContent() {
                     scores={graphScores}
                     currentIndex={currentIndex}
                     onMoveClick={goTo}
+                    height={100}
                   />
                 </div>
               )}

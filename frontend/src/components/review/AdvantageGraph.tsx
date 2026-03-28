@@ -6,15 +6,14 @@ import {
 } from 'recharts'
 
 type AdvantageGraphProps = {
-  /** N+1 scores em centipawns, perspectiva brancas. */
   scores: number[]
-  /** Índice da jogada atualmente exibida no tabuleiro (0 = posição inicial). */
   currentIndex: number
-  /** Chamado quando o usuário clica num ponto do gráfico. */
   onMoveClick: (index: number) => void
+  /** Altura do gráfico em px. Padrão: 64. */
+  height?: number
 }
 
-export function AdvantageGraph({ scores, currentIndex, onMoveClick }: AdvantageGraphProps) {
+export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 }: AdvantageGraphProps) {
   const data = scores.map((s, i) => ({
     index: i,
     score: Math.max(-5, Math.min(5, s / 100)), // clamp ±5 pawns
@@ -25,7 +24,7 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick }: AdvantageG
       <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-neutral-500">
         Vantagem
       </p>
-      <ResponsiveContainer width="100%" height={64}>
+      <ResponsiveContainer width="100%" height={height}>
         <LineChart
           data={data}
           onClick={(e) => {
