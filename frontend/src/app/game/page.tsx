@@ -122,6 +122,19 @@ function GameContent() {
 
   const isGameOver = status !== 'playing'
 
+  const [overlayVisible, setOverlayVisible] = useState(false)
+
+  useEffect(() => {
+    if (!isGameOver) { setOverlayVisible(false); return } // eslint-disable-line react-hooks/set-state-in-effect
+    const lastColor = moves[moves.length - 1]?.color
+    const botFinished = lastColor && lastColor !== colorParam
+    if (botFinished) {
+      const t = setTimeout(() => setOverlayVisible(true), 500)
+      return () => clearTimeout(t)
+    }
+    setOverlayVisible(true)
+  }, [isGameOver]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const lastMoveColor = moves[moves.length - 1]?.color
   const animDuration  = lastMoveColor && lastMoveColor !== colorParam ? 400 : 300
 
@@ -264,7 +277,7 @@ function GameContent() {
       </div>
 
       {/* Overlay de fim de jogo */}
-      {isGameOver && (
+      {overlayVisible && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-5 rounded-2xl bg-neutral-900 px-10 py-8 text-center shadow-2xl w-80">
 
