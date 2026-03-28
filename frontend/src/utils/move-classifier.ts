@@ -97,13 +97,13 @@ export function computeAccuracy(evaluations: MoveEvaluation[]): number {
 // Rótulos e cores por classificação — usados em componentes de UI
 export const CLASSIFICATION_META: Record<
   MoveClassification,
-  { label: string; emoji: string; color: string }
+  { label: string; emoji: string; color: string; description: string }
 > = {
-  brilliant:  { label: 'Brilhante',      emoji: '🌟', color: '#a78bfa' },
-  excellent:  { label: 'Excelente',      emoji: '✨', color: '#34d399' },
-  good:       { label: 'Boa',            emoji: '✅', color: '#6B8F71' },
-  inaccuracy: { label: 'Imprecisão',     emoji: '⚠️', color: '#9ca3af' },
-  mistake:    { label: 'Erro',           emoji: '❌', color: '#EE964B' },
-  missed_win: { label: 'Chance Perdida', emoji: '🎯', color: '#f87171' },
-  blunder:    { label: 'Capivarada',     emoji: '💀', color: '#ef4444' },
+  brilliant:  { label: 'Brilhante',      emoji: '🌟', color: '#a78bfa', description: 'Lance sacrificial extraordinário. Perda ≤ 0cp com sacrifício detectado.' },
+  excellent:  { label: 'Excelente',      emoji: '✨', color: '#34d399', description: 'Melhor ou quase melhor lance disponível. Perda ≤ 10cp.' },
+  good:       { label: 'Boa',            emoji: '✅', color: '#6B8F71', description: 'Jogada sólida e confiável. Perda ≤ 25cp.' },
+  inaccuracy: { label: 'Imprecisão',     emoji: '⚠️', color: '#9ca3af', description: 'Imprecisão leve — existia algo melhor. Perda 25–100cp.' },
+  mistake:    { label: 'Erro',           emoji: '❌', color: '#EE964B', description: 'Erro claro que piora a posição. Perda 100–300cp.' },
+  missed_win: { label: 'Chance Perdida', emoji: '🎯', color: '#f87171', description: 'Havia uma vitória disponível e foi desperdiçada. Perda > 150cp com vantagem prévia.' },
+  blunder:    { label: 'Capivarada',     emoji: '💀', color: '#ef4444', description: 'Erro grave que entrega vantagem decisiva. Perda > 300cp.' },
 }
