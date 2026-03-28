@@ -159,6 +159,14 @@ function GameContent() {
     if (status !== 'playing') playGameEndSound()
   }, [status])
 
+  // Som do bot: detecta quando o último lance é do bot e toca o som adequado
+  useEffect(() => {
+    const last = moves[moves.length - 1]
+    if (!last || last.color === colorParam) return
+    if (last.isCapture) playCaptureSound()
+    else playMoveSound()
+  }, [moves]) // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <main
       className="relative flex h-screen overflow-hidden items-center justify-center p-4"
