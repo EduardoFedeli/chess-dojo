@@ -24,6 +24,10 @@ type ChessBoardProps = {
   theme?: BoardTheme
   customPieces?: Record<string, (props?: { fill?: string; square?: string; svgStyle?: React.CSSProperties }) => React.JSX.Element>
   animationDuration?: number
+  /** Estilos extras mergeados sobre os highlights internos (xeque, seleção). */
+  squareStylesOverride?: Record<string, React.CSSProperties>
+  /** Setas customizadas: array de [from, to]. */
+  arrows?: [string, string][]
 }
 
 type PendingPromotion = { from: string; to: string; color: 'w' | 'b' }
@@ -88,6 +92,8 @@ export function ChessBoard({
   theme,
   customPieces,
   animationDuration = 300,
+  squareStylesOverride,
+  arrows,
 }: ChessBoardProps) {
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
   const [validSquares, setValidSquares] = useState<Record<string, { isCapture: boolean }>>({})
@@ -174,6 +180,10 @@ export function ChessBoard({
     squareStyles[sq] = isCapture ? HIGHLIGHT_CAPTURE : HIGHLIGHT_MOVE
   }
 
+  if (squareStylesOverride) {
+    Object.assign(squareStyles, squareStylesOverride)
+  }
+
   // react-chessboard v5 recebe todas as opções num único prop `options`
   return (
     <div className="relative">
@@ -190,6 +200,7 @@ export function ChessBoard({
           ...(theme?.darkSquareStyle  && { darkSquareStyle:  theme.darkSquareStyle  }),
           ...(theme?.lightSquareStyle && { lightSquareStyle: theme.lightSquareStyle }),
           ...(customPieces            && { pieces: customPieces }),
+          ...(arrows && arrows.length > 0 && { customArrows: arrows as [string, string][] }),
         }}
       />
 
