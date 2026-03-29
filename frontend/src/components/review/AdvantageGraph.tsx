@@ -28,7 +28,7 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 
   })
 
   return (
-    <div className="rounded-lg border border-neutral-700 bg-neutral-600 p-3">
+    <div className="rounded-lg border border-neutral-600 bg-neutral-900 p-3">
       <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-neutral-500">
         Vantagem
       </p>
@@ -55,7 +55,7 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 
             type="monotone"
             dataKey="scorePos"
             baseValue={0}
-            fill="#e5e7eb"
+            fill="#e8e8e8"
             stroke="none"
             dot={false}
             isAnimationActive={false}
@@ -65,13 +65,13 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 
             type="monotone"
             dataKey="scoreNeg"
             baseValue={0}
-            fill="#404040"
+            fill="#323232"
             stroke="none"
             dot={false}
             isAnimationActive={false}
             name="Pretas"
           />
-          <ReferenceLine y={0} stroke="#3a3a3a" strokeWidth={1} />
+          <ReferenceLine y={0} stroke="#555555" strokeWidth={1} />
           {data[currentIndex] && (
             <ReferenceDot
               x={currentIndex}
