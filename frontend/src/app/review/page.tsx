@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import React, { Suspense, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChessBoard } from '@/components/board/ChessBoard'
 import { AdvantageBar } from '@/components/review/AdvantageBar'
@@ -16,6 +16,7 @@ import type {
   SavedGame,
 } from '@/types/game.types'
 import { usePieceTheme } from '@/hooks/usePieceTheme'
+import { useBestMove } from '@/hooks/useBestMove'
 import { BOTS } from '@/data/bots'
 
 const INITIAL_FEN    = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
@@ -57,6 +58,7 @@ function ReviewContent() {
   })
 
   const { customPieces } = usePieceTheme()
+  const { bestMove, isLoading: isBestMoveLoading, query: queryBestMove, clear: clearBestMove } = useBestMove()
 
   // --- Estado de replay ---
   const [currentIndex, setCurrentIndex] = useState(0) // 0 = posição inicial
@@ -123,7 +125,10 @@ function ReviewContent() {
     : null
 
   // --- Navegação ---
-  const goTo    = useCallback((i: number) => setCurrentIndex(Math.max(0, Math.min(i, moves.length))), [moves.length])
+  const goTo    = useCallback((i: number) => {
+    clearBestMove()
+    setCurrentIndex(Math.max(0, Math.min(i, moves.length)))
+  }, [moves.length, clearBestMove])
   const goFirst = useCallback(() => goTo(0), [goTo])
   const goPrev  = useCallback(() => goTo(currentIndex - 1), [goTo, currentIndex])
   const goNext  = useCallback(() => goTo(currentIndex + 1), [goTo, currentIndex])
@@ -144,6 +149,13 @@ function ReviewContent() {
   const currentScore = graphScores[currentIndex] ?? 0
 
   if (!savedGame) return null
+
+  const bestMoveSquareStyles: Record<string, React.CSSProperties> = bestMove
+    ? {
+        [bestMove.from]: { background: 'rgba(255, 255, 0, 0.5)' },
+        [bestMove.to]:   { background: 'rgba(0, 200, 100, 0.5)' },
+      }
+    : {}
 
   const dateStr   = new Date(savedGame.date).toLocaleDateString('pt-BR')
   const reviewBot = BOTS.find(b => b.id === savedGame.botLevel)
@@ -198,6 +210,8 @@ function ReviewContent() {
                 onMove={() => {}}
                 disabled={true}
                 customPieces={customPieces}
+                squareStylesOverride={bestMoveSquareStyles}
+                arrows={bestMove ? [[bestMove.from, bestMove.to]] : []}
               />
             </div>
 
@@ -365,6 +379,19 @@ function ReviewContent() {
 
               {/* 5. Botões fixos no rodapé da coluna */}
               <div className="flex shrink-0 flex-col gap-2">
+                <button
+                  onClick={() => {
+                    if (bestMove) {
+                      clearBestMove()
+                    } else {
+                      queryBestMove(currentFen)
+                    }
+                  }}
+                  disabled={isBestMoveLoading}
+                  className="w-full rounded-xl border border-neutral-700 py-2 text-xs text-neutral-500 transition-colors hover:border-neutral-500 hover:text-neutral-300 disabled:opacity-40"
+                >
+                  {isBestMoveLoading ? 'Calculando...' : bestMove ? 'Limpar lance' : 'Ver melhor lance ⚡'}
+                </button>
                 {cachedResult && !deepReady && (
                   <button
                     onClick={() => setDeepAnalysisEnabled(true)}
