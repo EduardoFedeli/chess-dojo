@@ -64,7 +64,7 @@ function ReviewContent() {
 
   const [boardSize, setBoardSize] = useState(500)
   useEffect(() => {
-    setBoardSize(Math.min(window.innerHeight - 120, 700))
+    setBoardSize(Math.min(window.innerHeight - 80, 800))
   }, [])
 
   // Redireciona para home se não houver partida salva
@@ -203,7 +203,7 @@ function ReviewContent() {
         </div>
 
         {/* DIREITA: painel de análise — 320px fixo com scroll interno na lista */}
-        <div className="flex min-h-0 flex-col gap-3" style={{ width: 320, maxWidth: 320, flexShrink: 0 }}>
+        <div className="flex min-h-0 flex-col gap-3" style={{ width: 280, maxWidth: 280, flexShrink: 0 }}>
 
           {/* Cabeçalho horizontal */}
           <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3">
@@ -265,7 +265,7 @@ function ReviewContent() {
                     scores={graphScores}
                     currentIndex={currentIndex}
                     onMoveClick={goTo}
-                    height={100}
+                    height={150}
                   />
                 </div>
               )}

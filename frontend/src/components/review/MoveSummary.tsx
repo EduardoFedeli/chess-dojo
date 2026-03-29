@@ -59,24 +59,15 @@ export function MoveSummary({ evaluations, accuracy, compact = false }: MoveSumm
 
       {/* Categorias */}
       <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3">
-        <div
-          className="grid gap-x-4 gap-y-1 text-[11px]"
-          style={{ gridTemplateColumns: '1fr auto' }}
-        >
+        <div className="flex flex-col gap-y-1 text-[11px]">
           {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map((key) => {
             const meta  = CLASSIFICATION_META[key]
             const count = counts[key]
             return (
-              <div key={key} className="contents">
-                <span style={{ color: meta.color }}>
-                  {meta.emoji} {meta.label}
-                </span>
-                <span
-                  className="text-right font-bold tabular-nums"
-                  style={{ color: meta.color }}
-                >
-                  {count}
-                </span>
+              <div key={key} className="grid" style={{ gridTemplateColumns: '20px 1fr 24px' }}>
+                <span className="text-center leading-none">{meta.emoji}</span>
+                <span style={{ color: meta.color }}>{meta.label}</span>
+                <span className="text-right font-bold tabular-nums" style={{ color: meta.color }}>{count}</span>
               </div>
             )
           })}
