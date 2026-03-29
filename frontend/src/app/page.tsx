@@ -110,8 +110,9 @@ export default function Home() {
 
         {/* Card especial: Mago Ancião — coluna 4, linhas 1-2 */}
         {(() => {
-          const mago      = BOTS.find(b => b.level === 'mestre')!
+          const mago = BOTS.find(b => b.level === 'mestre')
           const isSelected = selectedBot === 'mestre'
+          if (!mago) return null
           return (
             <button
               key={mago.id}
