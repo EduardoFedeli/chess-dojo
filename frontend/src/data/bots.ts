@@ -4,7 +4,7 @@ export const BOTS: Bot[] = [
   { id: 'filhote',       name: 'Aprendiz',         level: 'filhote',       skillLevel: 0,  rating: 600,  description: 'Primeiros passos',           image: 'Aprendiz.png'       },
   { id: 'iniciante',     name: 'Escudeiro',       level: 'iniciante',     skillLevel: 3,  rating: 900,  description: 'Treino básico',             image: 'Escudeiro.png'      },
   { id: 'amador',        name: 'Caçador',         level: 'amador',        skillLevel: 6,  rating: 1200, description: 'Táticas furtivas',         image: 'Caçador.png'        },
-  { id: 'intermediario', name: 'Cavaleiro',       level: 'intermediario', skillLevel: 10, rating: 1500, description: 'Desafio honroso',          image: 'intermediario.png'  },
+  { id: 'intermediario', name: 'Cavaleiro',       level: 'intermediario', skillLevel: 10, rating: 1500, description: 'Desafio honroso',          image: 'Cavaleiro.png'      },
   { id: 'avancado',      name: 'Veterano',        level: 'avancado',      skillLevel: 14, rating: 1800, description: 'Cicatrizes de batalha',    image: 'Veterano.png'       },
   { id: 'guerreiro',     name: 'Mestre de Guerra', level: 'guerreiro',     skillLevel: 17, rating: 2000, description: 'Estrategista brutal',      image: 'MestreDeGuerra.png' },
   { id: 'mestre',        name: 'Mago Ancião',     level: 'mestre',        skillLevel: 20, rating: 2400, description: 'Sabedoria cósmica',        image: 'MagoAnciao.png'     },

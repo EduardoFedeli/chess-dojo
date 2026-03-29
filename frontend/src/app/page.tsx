@@ -30,7 +30,7 @@ export default function Home() {
           ♟ Chess Guild
         </h1>
         <p className="mt-3 text-base" style={{ color: '#9ca3af' }}>
-          Escolha seu adversário e evolua
+          Escolha bem seus oponentes nessa guilda
         </p>
       </div>
 
@@ -50,32 +50,43 @@ export default function Home() {
                 backgroundColor: isSelected ? `${accent}18` : '#111111',
                 outline: 'none',
               }}
-              className="flex w-52 flex-col items-center gap-3 rounded-2xl border-2 px-6 py-6 text-center transition-all hover:border-neutral-600"
+              className="relative flex w-64 flex-col items-center gap-3 rounded-2xl border-2 px-5 pb-5 pt-3 text-center transition-all hover:border-neutral-600"
             >
+              {/* Accent stripe */}
+              <div style={{ height: 3, background: accent, width: 'calc(100% + 40px)', marginTop: -12, marginBottom: 4, borderRadius: '10px 10px 0 0' }} />
+              {/* Rank badge */}
+              <div
+                className="absolute top-2 right-3 text-[10px] font-bold tracking-widest"
+                style={{ color: accent, opacity: 0.7 }}
+              >
+                {['I','II','III','IV','V','VI','VII'][BOTS.indexOf(bot)]}
+              </div>
               {/* Avatar */}
               <div
-                className="overflow-hidden rounded-full"
+                className="rounded-xl overflow-hidden"
                 style={{
-                  width: 80, height: 80,
-                  boxShadow: isSelected ? `0 0 12px ${accent}55` : '0 2px 8px rgba(0,0,0,0.5)',
+                  width: 120, height: 120,
+                  boxShadow: isSelected ? `0 0 16px ${accent}66` : '0 2px 12px rgba(0,0,0,0.6)',
                 }}
               >
                 <Image
                   src={`/bots/${bot.image}`}
                   alt={bot.name}
-                  width={80}
-                  height={80}
+                  width={120}
+                  height={120}
                   className="object-cover"
                 />
               </div>
 
               {/* Name */}
-              <span
-                className="text-lg font-bold tracking-wide"
-                style={{ color: isSelected ? accent : 'var(--brand-text)' }}
-              >
-                {bot.name}
-              </span>
+              <div className="flex min-h-[2.5rem] w-full items-center justify-center">
+                <span
+                  className="text-base font-bold tracking-wide leading-tight text-center"
+                  style={{ color: isSelected ? accent : 'var(--brand-text)' }}
+                >
+                  {bot.name}
+                </span>
+              </div>
 
               {/* Stars */}
               <div className="flex gap-0.5">

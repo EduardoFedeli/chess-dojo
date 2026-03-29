@@ -200,16 +200,6 @@ function GameContent() {
       className="relative flex h-screen overflow-hidden items-center justify-center p-4"
       style={{ background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)' }}
     >
-      {/* Botão de configurações */}
-      <button
-        onClick={() => setSettingsOpen(true)}
-        className="absolute top-4 right-4 rounded-lg border border-neutral-700 p-2 text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white"
-        title="Configurações"
-        aria-label="Abrir configurações"
-      >
-        <Settings size={18} />
-      </button>
-
       {/* Wrapper: tabuleiro + painel lado a lado */}
       <div className="flex items-start gap-6">
 
@@ -233,7 +223,7 @@ function GameContent() {
 
           {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
           <div className="flex items-center justify-between">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               {Object.entries(BOARD_THEMES).map(([key, { label, theme }]) => {
                 const isActive = activeTheme === key
                 return (
@@ -251,6 +241,14 @@ function GameContent() {
                   </button>
                 )
               })}
+              <button
+                onClick={() => setSettingsOpen(true)}
+                className="rounded-md border border-neutral-700 p-1 text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white"
+                title="Configurações"
+                aria-label="Abrir configurações"
+              >
+                <Settings size={14} />
+              </button>
             </div>
 
             {!isGameOver && (
