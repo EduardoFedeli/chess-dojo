@@ -32,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { BOTS } from '@/data/bots'
 
 
 const SKILL_LEVEL: Record<BotLevel, number> = {
@@ -70,6 +71,7 @@ function GameContent() {
   const colorParam = (searchParams.get('color') ?? 'white')     as PieceColor
 
   const skillLevel = SKILL_LEVEL[botParam] ?? 2
+  const currentBot = BOTS.find(b => b.level === botParam) ?? null
 
   const { fen, makeMove, status, resign, moves } = useGame(colorParam)
   const [resignConfirm, setResignConfirm] = useState(false)
@@ -280,9 +282,17 @@ function GameContent() {
           </div>
         </div>
 
-        {/* Coluna direita: painel de histórico — altura igual ao tabuleiro, scroll interno */}
-        <div style={{ width: 280, height: boardSize, flexShrink: 0 }}>
-          <MoveHistory moves={moves} />
+        {/* Coluna direita: bot info + histórico */}
+        <div className="flex flex-col gap-2" style={{ width: 280, height: boardSize, flexShrink: 0 }}>
+          {currentBot && (
+            <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2">
+              <span className="text-sm font-semibold text-white">⚔ {currentBot.name}</span>
+              <span className="ml-2 text-xs text-neutral-500">{currentBot.rating} ELO</span>
+            </div>
+          )}
+          <div className="flex-1 min-h-0">
+            <MoveHistory moves={moves} />
+          </div>
         </div>
       </div>
 
