@@ -171,7 +171,6 @@ function ReviewContent() {
       style={{
         height: '100vh',
         color: '#e5e7eb',
-        background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)',
       }}
     >
       {/* Botão voltar */}

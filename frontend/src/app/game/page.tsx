@@ -208,7 +208,6 @@ function GameContent() {
   return (
     <main
       className="relative flex h-screen overflow-hidden items-center justify-center p-4"
-      style={{ background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)' }}
     >
       {/* Wrapper: tabuleiro + painel lado a lado */}
       <div className="flex items-start gap-6">
