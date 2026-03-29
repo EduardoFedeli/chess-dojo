@@ -18,7 +18,7 @@ export default function Home() {
 
   return (
     <main
-      className="flex min-h-screen flex-col items-center justify-center gap-14 px-6 py-16"
+      className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-6"
       style={{ color: 'var(--brand-text)' }}
     >
       {/* Header */}
@@ -35,14 +35,7 @@ export default function Home() {
       </div>
 
       {/* Bot cards — grid 3×2 + Mago Ancião */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 220px) 260px',
-          gridTemplateRows: 'repeat(2, 1fr)',
-          gap: '16px',
-        }}
-      >
+      <div className="bot-grid">
         {/* Cards regulares: primeiros 6 bots */}
         {BOTS.filter(bot => bot.level !== 'mestre').map((bot, index) => {
           const isSelected = selectedBot === bot.level
@@ -72,13 +65,13 @@ export default function Home() {
               </div>
 
               {/* Avatar */}
-              <div className="overflow-hidden rounded-xl" style={{ width: 160, height: 160, background: '#000' }}>
+              <div className="overflow-hidden rounded-xl w-24 h-24 md:w-[140px] md:h-[140px]" style={{ background: '#000' }}>
                 <Image
                   src={`/bots/${bot.image}`}
                   alt={bot.name}
-                  width={160}
-                  height={160}
-                  className="object-contain"
+                  width={140}
+                  height={140}
+                  className="object-contain w-full h-full"
                 />
               </div>
 
@@ -118,8 +111,6 @@ export default function Home() {
               key={mago.id}
               onClick={() => setSelectedBot('mestre')}
               style={{
-                gridColumn:      '4',
-                gridRow:         '1 / 3',
                 backgroundColor: '#000000',
                 borderColor:     '#0047AB',
                 boxShadow: isSelected
@@ -127,7 +118,7 @@ export default function Home() {
                   : '0 0 30px #0047AB44, 0 0 60px #0047AB11',
                 outline: 'none',
               }}
-              className="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 px-4 py-6 text-center transition-all overflow-hidden"
+              className="mago-card col-span-2 relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 px-4 py-6 text-center transition-all overflow-hidden"
             >
               {/* Efeito de névoa cósmica */}
               <div
@@ -153,13 +144,13 @@ export default function Home() {
               </div>
 
               {/* Avatar */}
-              <div className="relative z-10 overflow-hidden rounded-xl" style={{ width: 200, height: 200, background: '#000', boxShadow: '0 0 24px #0047AB44' }}>
+              <div className="relative z-10 overflow-hidden rounded-xl w-[140px] h-[140px] md:w-[160px] md:h-[160px]" style={{ background: '#000' }}>
                 <Image
                   src={`/bots/${mago.image}`}
                   alt={mago.name}
-                  width={200}
-                  height={200}
-                  className="object-contain"
+                  width={160}
+                  height={160}
+                  className="object-contain w-full h-full"
                 />
               </div>
 

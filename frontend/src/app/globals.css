@@ -145,6 +145,36 @@
     background-attachment: fixed;
     background-position: center;
   }
+  /* Mobile: background-attachment: fixed não funciona em iOS/Android */
+  @media (max-width: 767px) {
+    body[data-bg="gradient"],
+    body:not([data-bg]) {
+      background-attachment: scroll;
+    }
+    body[data-bg="image"] {
+      background-image: url('/bots/FundoMobile.png');
+      background-attachment: scroll;
+    }
+  }
+
+/* Grid de bots — mobile first (2 colunas), desktop override */
+.bot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .bot-grid {
+    grid-template-columns: repeat(3, 220px) 260px;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .mago-card {
+    grid-column: 4;
+    grid-row: 1 / 3;
+  }
+}
   html {
     @apply font-sans;
   }
