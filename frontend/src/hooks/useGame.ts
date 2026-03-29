@@ -47,6 +47,7 @@ export function useGame(playerColor: PieceColor): UseGameReturn {
         isCapture: result.captured !== undefined,
         isCheck: chess.inCheck(),
         isCheckmate: chess.isCheckmate(),
+        captured: result.captured,
         promotion: result.promotion,
       }
 

@@ -73,6 +73,16 @@ function GameContent() {
   const skillLevel = SKILL_LEVEL[botParam] ?? 2
   const currentBot = BOTS.find(b => b.level === botParam) ?? null
 
+  // Peças capturadas: ordenadas do menor para maior valor (padrão chess.com)
+  const PIECE_ORDER = ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'n', 'n', 'b', 'b', 'r', 'r', 'q'] as const
+  const PIECE_UNICODE: Record<string, { white: string; black: string }> = {
+    p: { white: '♙', black: '♟' },
+    n: { white: '♘', black: '♞' },
+    b: { white: '♗', black: '♝' },
+    r: { white: '♖', black: '♜' },
+    q: { white: '♕', black: '♛' },
+  }
+
   const { fen, makeMove, status, resign, moves } = useGame(colorParam)
   const [resignConfirm, setResignConfirm] = useState(false)
 

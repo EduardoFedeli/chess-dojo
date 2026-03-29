@@ -28,6 +28,7 @@ export type GameMove = {
   isCapture: boolean
   isCheck: boolean
   isCheckmate: boolean
+  captured?: PieceSymbol   // piece type that was captured (undefined if no capture)
   promotion?: PieceSymbol // peça de promoção se houver: 'q' | 'r' | 'b' | 'n'
 }
 
