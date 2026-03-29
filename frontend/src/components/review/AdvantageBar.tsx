@@ -21,7 +21,7 @@ export function AdvantageBar({ scoreCp, height = 400 }: AdvantageBarProps) {
     <div className="flex flex-col items-center gap-1 select-none">
       <div
         className="relative overflow-hidden rounded"
-        style={{ width: 14, height, border: '1px solid #2a2a2a' }}
+        style={{ width: 24, height, border: '1px solid #2a2a2a' }}
       >
         {/* Porção preta (topo) */}
         <div style={{ height: `${blackPercent}%`, background: '#222' }} />
