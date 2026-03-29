@@ -59,17 +59,17 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 
             stroke="none"
             dot={false}
             isAnimationActive={false}
-            name="Vantagem"
+            name="Brancas"
           />
           <Area
             type="monotone"
             dataKey="scoreNeg"
             baseValue={0}
-            fill="#1a1a1a"
+            fill="#404040"
             stroke="none"
             dot={false}
             isAnimationActive={false}
-            name="Vantagem"
+            name="Pretas"
           />
           <ReferenceLine y={0} stroke="#3a3a3a" strokeWidth={1} />
           {data[currentIndex] && (
