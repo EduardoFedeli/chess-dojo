@@ -23,8 +23,8 @@ export const BOT_STARS: Record<BotLevel, number> = {
 export const BOT_ACCENT: Record<BotLevel, string> = {
   filhote:       '#6B8F71',
   iniciante:     '#4A9E7A',
-  amador:        '#C8A84B',
-  intermediario: '#EE964B',
+  amador:        '#228B22',
+  intermediario: '#c8a84b',
   avancado:      '#E06B2B',
   guerreiro:     '#C0392B',
   mestre:        '#0047AB',
