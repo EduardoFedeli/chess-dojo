@@ -129,10 +129,21 @@
   }
   body {
     @apply text-foreground;
-    background: radial-gradient(ellipse at 20% 0%, #1a1208 0%, #0d0d0d 45%, #000000 100%);
-    background-attachment: fixed;
     min-height: 100vh;
     font-family: var(--font-body), sans-serif;
+  }
+  /* Gradiente padrão — ativo quando data-bg="gradient" ou antes do JS hidratar */
+  body[data-bg="gradient"],
+  body:not([data-bg]) {
+    background: radial-gradient(ellipse at 20% 0%, #1a1208 0%, #0d0d0d 45%, #000000 100%);
+    background-attachment: fixed;
+  }
+  /* Fundo de imagem */
+  body[data-bg="image"] {
+    background-image: url('/bots/FundoPC.png');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
   }
   html {
     @apply font-sans;
