@@ -65,7 +65,8 @@ function ReviewContent() {
 
   const [boardSize, setBoardSize] = useState(500)
   useEffect(() => {
-    setBoardSize(Math.min(window.innerHeight - 80, 800))
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBoardSize(Math.min(window.innerHeight - 140, 700))
   }, [])
 
   // Redireciona para home se não houver partida salva
@@ -145,14 +146,21 @@ function ReviewContent() {
 
   const dateStr = new Date(savedGame.date).toLocaleDateString('pt-BR')
   const botName = savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)
+  const scoreDisplay = currentScore === 0
+    ? '0.0'
+    : `${currentScore > 0 ? '+' : ''}${(currentScore / 100).toFixed(1)}`
 
   return (
     <main
-      className="flex h-screen flex-col gap-3 overflow-hidden p-4"
-      style={{ color: '#e5e7eb', background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)' }}
+      className="overflow-hidden"
+      style={{
+        height: '100vh',
+        color: '#e5e7eb',
+        background: 'radial-gradient(ellipse at center, #000000 0%, #0d1a0f 100%)',
+      }}
     >
       {/* Botão voltar */}
-      <div className="shrink-0">
+      <div style={{ padding: '12px 24px' }}>
         <button
           onClick={() => router.push('/')}
           className="flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-200"
@@ -161,15 +169,23 @@ function ReviewContent() {
         </button>
       </div>
 
-      {/* Conteúdo principal */}
-      <div className="flex min-h-0 flex-1 gap-6">
-
-        {/* ESQUERDA: barra de vantagem + tabuleiro + controles */}
-        <div className="flex shrink-0 items-start gap-2">
+      {/* Container centralizado */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: '0 auto',
+          padding: '0 24px',
+          height: 'calc(100vh - 48px)',
+          display: 'flex',
+          gap: 24,
+        }}
+      >
+        {/* COLUNA ESQUERDA: barra de vantagem + tabuleiro + controles + score */}
+        <div className="flex shrink-0 items-center gap-3">
           {graphScores.length > 0 && (
             <AdvantageBar scoreCp={currentScore} height={boardSize} />
           )}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col items-center gap-3">
             {/* Tabuleiro read-only */}
             <div style={{ width: boardSize, height: boardSize }}>
               <ChessBoard
@@ -182,8 +198,8 @@ function ReviewContent() {
               />
             </div>
 
-            {/* Controles de navegação */}
-            <div className="flex gap-2">
+            {/* Controles de navegação — centralizados */}
+            <div className="flex justify-center gap-2">
               {[
                 { label: '⏮', action: goFirst, title: 'Início' },
                 { label: '◀',  action: goPrev,  title: 'Anterior (←)' },
@@ -200,13 +216,23 @@ function ReviewContent() {
                 </button>
               ))}
             </div>
+
+            {/* Score numérico atual */}
+            <span
+              className="text-sm font-bold tabular-nums"
+              style={{ color: currentScore >= 0 ? '#6B8F71' : '#f87171' }}
+            >
+              {scoreDisplay}
+            </span>
           </div>
         </div>
 
-        {/* DIREITA: painel de análise — 280px fixo com scroll interno na lista */}
-        <div className="flex min-h-0 flex-col gap-3" style={{ width: 280, maxWidth: 280, flexShrink: 0 }}>
-
-          {/* Cabeçalho horizontal */}
+        {/* COLUNA DIREITA: 420px, flex-col, 100% altura */}
+        <div
+          className="flex flex-col gap-3 min-h-0"
+          style={{ width: 420, flexShrink: 0, height: '100%' }}
+        >
+          {/* 1. Cabeçalho */}
           <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
               <span className="text-sm font-bold text-white">Revisão da Partida</span>
@@ -245,7 +271,7 @@ function ReviewContent() {
             </div>
           )}
 
-          {/* Estado: sem análise — botão "Começar Análise" */}
+          {/* Estado: sem análise */}
           {!activeResult && !isDeepAnalyzing && (
             <button
               onClick={() => setDeepAnalysisEnabled(true)}
@@ -259,19 +285,19 @@ function ReviewContent() {
           {/* Estado: análise disponível */}
           {activeResult && !isDeepAnalyzing && (
             <>
-              {/* Gráfico compacto */}
+              {/* 2. Gráfico compacto */}
               {graphScores.length > 0 && (
                 <div className="shrink-0">
                   <AdvantageGraph
                     scores={graphScores}
                     currentIndex={currentIndex}
                     onMoveClick={goTo}
-                    height={150}
+                    height={140}
                   />
                 </div>
               )}
 
-              {/* Resumo horizontal */}
+              {/* 3. Resumo — grid compacto 3 colunas */}
               <div className="shrink-0">
                 <MoveSummary
                   evaluations={activeResult.evaluations}
@@ -280,7 +306,7 @@ function ReviewContent() {
                 />
               </div>
 
-              {/* Lista de jogadas — flex-1 ocupa o espaço restante, scroll interno */}
+              {/* 4. Lista de jogadas — flex-1, scroll interno */}
               <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950">
                 <p className="shrink-0 px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
                   Jogadas
@@ -332,7 +358,7 @@ function ReviewContent() {
                 </div>
               </div>
 
-              {/* Botões inferiores */}
+              {/* 5. Botões fixos no rodapé da coluna */}
               <div className="flex shrink-0 flex-col gap-2">
                 {cachedResult && !deepReady && (
                   <button
@@ -342,11 +368,14 @@ function ReviewContent() {
                     Re-analisar com depth 10 (mais preciso)
                   </button>
                 )}
-                <PdfExportButton savedGame={savedGame} result={activeResult} playerAccuracy={playerAccuracy ?? activeResult.accuracy} />
+                <PdfExportButton
+                  savedGame={savedGame}
+                  result={activeResult}
+                  playerAccuracy={playerAccuracy ?? activeResult.accuracy}
+                />
               </div>
             </>
           )}
-
         </div>
       </div>
     </main>
