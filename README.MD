@@ -2,7 +2,7 @@
 
 **Practice chess against AI bots. Analyze every move. Export your review as PDF.**
 
-Chess Guild is a fully client-side chess application built as a portfolio project. There is no backend and no account required — everything runs in the browser, powered by Stockfish 18 WebAssembly.
+Chess Guild is a fully client-side chess application built as a portfolio project. There is no backend and no account required, everything runs in the browser, powered by Stockfish 18 WebAssembly.
 
 The core loop is simple: pick a bot, play a game, then review every move with engine-powered analysis. Each move is classified, your accuracy is scored, and you can download a complete PDF report of the session.
 
@@ -15,9 +15,9 @@ The core loop is simple: pick a bot, play a game, then review every move with en
 - Post-game analysis with per-move classification powered by Stockfish
 - Accuracy score based on engine evaluation
 - Advantage graph with notable-move flags
-- "Show best move" button in review — displays the engine's suggestion with an arrow and highlight
+- "Show best move" button in review - displays the engine's suggestion with an arrow and highlight
 - Full PDF export of the game review (legend, graph, and annotated move list)
-- 100% local — no login, no data sent anywhere
+- 100% local, no login, no data sent anywhere
 
 ## Tech Stack
 
@@ -37,7 +37,7 @@ The core loop is simple: pick a bot, play a game, then review every move with en
 
 ```bash
 # Clone the repository
-git clone https://github.com/EduardoFedeli/chess-dojo.git
+git clone https://github.com/EduardoFedeli/chess-guild.git
 
 # Install dependencies and run
 cd chess-dojo/frontend
