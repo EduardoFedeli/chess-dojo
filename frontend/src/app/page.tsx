@@ -6,21 +6,33 @@ import { useRouter } from 'next/navigation'
 import type { Bot, BotLevel, PieceColor } from '@/types/game.types'
 
 const BOTS: Bot[] = [
-  { id: 'iniciante', name: 'Iniciante', level: 'iniciante', skillLevel: 2,  description: 'Perfeito para aprender'  },
-  { id: 'guerreiro', name: 'Guerreiro', level: 'guerreiro', skillLevel: 10, description: 'Um desafio de verdade'   },
-  { id: 'mestre',    name: 'Mestre',    level: 'mestre',    skillLevel: 20, description: 'Sem piedade'             },
+  { id: 'filhote',       name: 'Filhote',       level: 'filhote',       skillLevel: 0,  description: 'Ainda está aprendendo'       },
+  { id: 'iniciante',     name: 'Iniciante',     level: 'iniciante',     skillLevel: 3,  description: 'Perfeito para começar'        },
+  { id: 'amador',        name: 'Amador',        level: 'amador',        skillLevel: 6,  description: 'Começa a entender o jogo'     },
+  { id: 'intermediario', name: 'Intermediário', level: 'intermediario', skillLevel: 10, description: 'Um desafio de verdade'        },
+  { id: 'avancado',      name: 'Avançado',      level: 'avancado',      skillLevel: 14, description: 'Joga com consistência'        },
+  { id: 'guerreiro',     name: 'Guerreiro',     level: 'guerreiro',     skillLevel: 17, description: 'Poucos erros, muita pressão' },
+  { id: 'mestre',        name: 'Mestre',        level: 'mestre',        skillLevel: 20, description: 'Sem piedade'                 },
 ]
 
 const BOT_STARS: Record<BotLevel, number> = {
-  iniciante: 1,
-  guerreiro: 2,
-  mestre:    3,
+  filhote:       1,
+  iniciante:     2,
+  amador:        3,
+  intermediario: 4,
+  avancado:      5,
+  guerreiro:     6,
+  mestre:        7,
 }
 
 const BOT_ACCENT: Record<BotLevel, string> = {
-  iniciante: '#6B8F71',
-  guerreiro: '#EE964B',
-  mestre:    '#813405',
+  filhote:       '#6B8F71',
+  iniciante:     '#4A9E7A',
+  amador:        '#C8A84B',
+  intermediario: '#EE964B',
+  avancado:      '#E06B2B',
+  guerreiro:     '#C0392B',
+  mestre:        '#813405',
 }
 
 export default function Home() {
@@ -96,8 +108,8 @@ export default function Home() {
 
               {/* Stars */}
               <div className="flex gap-0.5">
-                {[1, 2, 3].map((n) => (
-                  <span key={n} style={{ color: n <= stars ? '#EE964B' : '#374151', fontSize: 14 }}>
+                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                  <span key={n} style={{ color: n <= stars ? '#EE964B' : '#374151', fontSize: 11 }}>
                     ★
                   </span>
                 ))}

@@ -35,9 +35,13 @@ import {
 
 
 const SKILL_LEVEL: Record<BotLevel, number> = {
-  iniciante: 2,
-  guerreiro: 10,
-  mestre: 20,
+  filhote:       0,
+  iniciante:     3,
+  amador:        6,
+  intermediario: 10,
+  avancado:      14,
+  guerreiro:     17,
+  mestre:        20,
 }
 
 const GAME_OVER_MESSAGE: Record<Exclude<GameStatus, 'playing'>, string> = {

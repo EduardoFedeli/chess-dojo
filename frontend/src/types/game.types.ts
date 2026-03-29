@@ -4,13 +4,13 @@ import type { PieceSymbol } from 'chess.js'
 export type PieceColor = 'white' | 'black'
 
 // Nível do bot — nome semântico para a UI; skillLevel é o valor enviado ao Stockfish
-export type BotLevel = 'iniciante' | 'guerreiro' | 'mestre'
+export type BotLevel = 'filhote' | 'iniciante' | 'amador' | 'intermediario' | 'avancado' | 'guerreiro' | 'mestre'
 
 export type Bot = {
   id: string
   name: string
   level: BotLevel
-  skillLevel: number // 2 = iniciante | 10 = guerreiro | 20 = mestre
+  skillLevel: number // 0=filhote | 3=iniciante | 6=amador | 10=intermediario | 14=avancado | 17=guerreiro | 20=mestre
   description: string
 }
 
