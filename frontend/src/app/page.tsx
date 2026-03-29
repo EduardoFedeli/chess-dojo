@@ -3,37 +3,8 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import type { Bot, BotLevel, PieceColor } from '@/types/game.types'
-
-const BOTS: Bot[] = [
-  { id: 'filhote',       name: 'Filhote',       level: 'filhote',       skillLevel: 0,  description: 'Ainda está aprendendo'       },
-  { id: 'iniciante',     name: 'Iniciante',     level: 'iniciante',     skillLevel: 3,  description: 'Perfeito para começar'        },
-  { id: 'amador',        name: 'Amador',        level: 'amador',        skillLevel: 6,  description: 'Começa a entender o jogo'     },
-  { id: 'intermediario', name: 'Intermediário', level: 'intermediario', skillLevel: 10, description: 'Um desafio de verdade'        },
-  { id: 'avancado',      name: 'Avançado',      level: 'avancado',      skillLevel: 14, description: 'Joga com consistência'        },
-  { id: 'guerreiro',     name: 'Guerreiro',     level: 'guerreiro',     skillLevel: 17, description: 'Poucos erros, muita pressão' },
-  { id: 'mestre',        name: 'Mestre',        level: 'mestre',        skillLevel: 20, description: 'Sem piedade'                 },
-]
-
-const BOT_STARS: Record<BotLevel, number> = {
-  filhote:       1,
-  iniciante:     2,
-  amador:        3,
-  intermediario: 4,
-  avancado:      5,
-  guerreiro:     6,
-  mestre:        7,
-}
-
-const BOT_ACCENT: Record<BotLevel, string> = {
-  filhote:       '#6B8F71',
-  iniciante:     '#4A9E7A',
-  amador:        '#C8A84B',
-  intermediario: '#EE964B',
-  avancado:      '#E06B2B',
-  guerreiro:     '#C0392B',
-  mestre:        '#813405',
-}
+import type { BotLevel, PieceColor } from '@/types/game.types'
+import { BOTS, BOT_STARS, BOT_ACCENT } from '@/data/bots'
 
 export default function Home() {
   const router = useRouter()
@@ -118,6 +89,11 @@ export default function Home() {
               {/* Description */}
               <span className="text-sm" style={{ color: '#9ca3af' }}>
                 {bot.description}
+              </span>
+
+              {/* Rating */}
+              <span className="text-xs font-semibold" style={{ color: accent }}>
+                ⚔ {bot.rating} ELO
               </span>
             </button>
           )
