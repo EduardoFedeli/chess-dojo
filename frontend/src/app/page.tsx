@@ -27,10 +27,10 @@ export default function Home() {
           className="text-5xl font-black tracking-tight"
           style={{ fontFamily: 'var(--font-display)', color: 'var(--brand-text)' }}
         >
-          ♟ Chess Dojo
+          ♟ Chess Guild
         </h1>
         <p className="mt-3 text-base" style={{ color: '#9ca3af' }}>
-          Escolha seu adversário e jogue
+          Escolha seu adversário e evolua
         </p>
       </div>
 
@@ -87,7 +87,7 @@ export default function Home() {
               </div>
 
               {/* Description */}
-              <span className="text-sm" style={{ color: '#9ca3af' }}>
+              <span className="text-xs whitespace-nowrap" style={{ color: '#9ca3af' }}>
                 {bot.description}
               </span>
 

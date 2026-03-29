@@ -46,7 +46,7 @@ export function PdfExportButton({
 
       // ── Cabeçalho ────────────────────────────────────────────────────────────
       doc.setFontSize(15).setFont('helvetica', 'bold').setTextColor(0, 0, 0)
-      doc.text('Chess Dojo - Revisao de Partida', M, y); y += 7
+      doc.text('Chess Guild - Revisao de Partida', M, y); y += 7
 
       doc.setFontSize(9).setFont('helvetica', 'normal').setTextColor(100, 100, 100)
       doc.text(`${dateStr}  vs ${botName}  ${colorText}  ${resultText}  ${moves.length} jogadas`, M, y); y += 4
@@ -211,11 +211,11 @@ export function PdfExportButton({
       ensureSpace(10)
       doc.setDrawColor(200, 200, 200).line(M, y + 4, W - M, y + 4); y += 8
       doc.setFontSize(7).setFont('helvetica', 'normal').setTextColor(160, 160, 160)
-      doc.text(`Chess Dojo  -  ${dateStr}`, W / 2, y, { align: 'center' })
+      doc.text(`Chess Guild  -  ${dateStr}`, W / 2, y, { align: 'center' })
 
       // ── Salvar ───────────────────────────────────────────────────────────────
       const date = new Date(savedGame.date).toISOString().slice(0, 10)
-      doc.save(`chess-dojo-revisao-${date}.pdf`)
+      doc.save(`chess-guild-revisao-${date}.pdf`)
 
     } finally {
       setIsExporting(false)

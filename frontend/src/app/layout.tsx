@@ -15,8 +15,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Chess Dojo',
-  description: 'Jogue xadrez contra bots e melhore sua precisão.',
+  title: 'Chess Guild',
+  description: 'Evolua no xadrez com progressão RPG. Jogue contra bots, analise suas partidas e suba de nível.',
 }
 
 export default function RootLayout({
