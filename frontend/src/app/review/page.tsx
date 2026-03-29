@@ -202,7 +202,7 @@ function ReviewContent() {
           </div>
         </div>
 
-        {/* DIREITA: painel de análise — 320px fixo com scroll interno na lista */}
+        {/* DIREITA: painel de análise — 280px fixo com scroll interno na lista */}
         <div className="flex min-h-0 flex-col gap-3" style={{ width: 280, maxWidth: 280, flexShrink: 0 }}>
 
           {/* Cabeçalho horizontal */}
