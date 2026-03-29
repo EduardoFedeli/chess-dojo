@@ -16,6 +16,7 @@ import type {
   SavedGame,
 } from '@/types/game.types'
 import { usePieceTheme } from '@/hooks/usePieceTheme'
+import { BOTS } from '@/data/bots'
 
 const INITIAL_FEN    = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 const STORAGE_GAME   = 'chess-dojo:last-game'
@@ -144,8 +145,10 @@ function ReviewContent() {
 
   if (!savedGame) return null
 
-  const dateStr = new Date(savedGame.date).toLocaleDateString('pt-BR')
-  const botName = savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)
+  const dateStr   = new Date(savedGame.date).toLocaleDateString('pt-BR')
+  const reviewBot = BOTS.find(b => b.id === savedGame.botLevel)
+  const botName   = reviewBot?.name ?? savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)
+  const botRating = reviewBot?.rating
   const scoreDisplay = currentScore === 0
     ? '0.0'
     : `${currentScore > 0 ? '+' : ''}${(currentScore / 100).toFixed(1)}`
@@ -237,7 +240,9 @@ function ReviewContent() {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
               <span className="text-sm font-bold text-white">Revisão da Partida</span>
               <span className="text-xs text-neutral-500">📅 {dateStr}</span>
-              <span className="text-xs text-neutral-500">🤖 vs {botName}</span>
+              <span className="text-xs text-neutral-500">
+                🤖 vs {botName}{botRating ? ` (${botRating} ELO)` : ''}
+              </span>
               <span className="text-xs text-neutral-500">
                 {savedGame.playerColor === 'white' ? '♔ Brancas' : '♚ Pretas'}
               </span>
