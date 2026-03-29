@@ -1,105 +1,109 @@
-# ♟️ chess-dojo
+# Chess Guild
 
-Aplicação web de xadrez com bots de diferentes níveis e análise de partidas powered by Stockfish.
-Projeto desenvolvido para estudo e portfólio, com foco em boas práticas e código limpo.
+**Practice chess against AI bots. Analyze every move. Export your review as PDF.**
 
-## Tecnologias
+Chess Guild is a fully client-side chess application built as a portfolio project. There is no backend and no account required — everything runs in the browser, powered by Stockfish 18 WebAssembly.
 
-- **Framework:** Next.js 15 (App Router)
-- **Linguagem:** TypeScript
-- **UI:** shadcn/ui + Tailwind CSS
-- **Xadrez:** chess.js + react-chessboard
-- **Engine:** Stockfish (WebAssembly — roda direto no navegador)
-- **Storage:** localStorage (sem banco de dados)
-- **Deploy:** Vercel
+The core loop is simple: pick a bot, play a game, then review every move with engine-powered analysis. Each move is classified, your accuracy is scored, and you can download a complete PDF report of the session.
 
-## Funcionalidades
+## Features
 
-- Tabuleiro interativo com validação de jogadas
-- 3 bots com níveis reais de dificuldade via Stockfish
-- Análise pós-partida com classificação de cada jogada
-- Estatísticas de desempenho (acurácia, blunders, vitórias)
-- Histórico de partidas com replay
-- Temas de tabuleiro customizáveis
-- 100% client-side — sem backend, sem servidor
+- Play against 7 AI bots with increasing difficulty (ELO 600 → 2400)
+- Choose piece color, board theme (5 options), and piece style
+- Live move history during the game
+- Sound effects for moves, captures, check, and game end
+- Post-game analysis with per-move classification powered by Stockfish
+- Accuracy score based on engine evaluation
+- Advantage graph with notable-move flags
+- "Show best move" button in review — displays the engine's suggestion with an arrow and highlight
+- Full PDF export of the game review (legend, graph, and annotated move list)
+- 100% local — no login, no data sent anywhere
 
-## Bots disponíveis
+## Tech Stack
 
-| Bot | Nível Stockfish | Descrição |
-|-----|----------------|-----------|
-| 🐣 Iniciante | 1–3 | Comete erros, ideal para aprender os fundamentos |
-| ⚔️ Guerreiro | 8–10 | Jogo sólido com falhas ocasionais |
-| 🏆 Mestre | 18–20 | Pune cada erro sem piedade |
-
-## Classificação de jogadas
-
-Após cada partida, o Stockfish analisa suas jogadas e classifica cada uma:
-
-| Classificação | Descrição |
+| Layer | Technology |
 |---|---|
-| ✨ Excelente | Melhor jogada possível na posição |
-| ✅ Boa | Jogada sólida, mantém a vantagem |
-| ⚠️ Imprecisão | Jogada razoável mas existe algo melhor |
-| ❌ Erro | Jogada ruim, perde vantagem significativa |
-| 💀 Blunder | Erro grave, muda o resultado da partida |
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (strict) |
+| UI | React 19, shadcn/ui, Tailwind CSS v4, Radix UI |
+| Chess logic | chess.js |
+| Board | react-chessboard v5 |
+| Engine | Stockfish 18 (WebAssembly, runs in-browser) |
+| PDF export | jsPDF |
+| Storage | localStorage |
+| Deploy | Vercel |
 
-## Como rodar localmente
+## Getting Started
 
 ```bash
-# Clone o repositório
+# Clone the repository
 git clone https://github.com/EduardoFedeli/chess-dojo.git
+
+# Install dependencies and run
 cd chess-dojo/frontend
-
-# Instale as dependências
 npm install
-
-# Rode em desenvolvimento
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000).
 
-## Estrutura do projeto
-
-```
-frontend/
-├── src/
-│   ├── app/                  # Rotas (Next.js App Router)
-│   │   ├── page.tsx          # Home — seleção de bot
-│   │   ├── game/             # Tela do jogo ao vivo
-│   │   ├── review/[gameId]/  # Revisão e análise de partida
-│   │   ├── stats/            # Estatísticas do jogador
-│   │   ├── history/          # Histórico de partidas
-│   │   └── settings/         # Configurações e temas
-│   ├── components/
-│   │   ├── board/            # Tabuleiro, relógio, histórico de jogadas
-│   │   ├── bots/             # Cards e avatares dos bots
-│   │   ├── review/           # Slider de replay, badges de classificação
-│   │   └── ui/               # Componentes shadcn/ui
-│   ├── hooks/                # useGame, useLocalStorage, useStats
-│   ├── services/             # storage.service.ts
-│   ├── types/                # Tipagens TypeScript
-│   └── utils/                # pgn-parser, move-classifier
+```bash
+npm run build   # production build / type-check
+npm run lint    # ESLint
 ```
 
-## Decisões técnicas
+## Bot Progression
 
-**Por que só frontend?**
-Stockfish roda via WebAssembly direto no navegador — não precisa de servidor para processar jogadas ou análise. Isso elimina custos de hospedagem de backend e torna o projeto mais simples de manter.
+Seven bots form an RPG-style ladder from beginner to near-master level.
 
-**Por que localStorage?**
-Sem sistema de login, o localStorage é suficiente para persistir histórico e estatísticas. A limitação (dados presos no navegador) é aceitável para o escopo do projeto.
+| Bot | Stars | Stockfish Skill | Approx. ELO |
+|---|---|---|---|
+| Aprendiz | ⭐ | 0 | 600 |
+| Escudeiro | ⭐⭐ | 3 | 900 |
+| Caçador | ⭐⭐⭐ | 6 | 1200 |
+| Cavaleiro | ⭐⭐⭐⭐ | 10 | 1500 |
+| Veterano | ⭐⭐⭐⭐⭐ | 14 | 1800 |
+| Mestre de Guerra | ⭐⭐⭐⭐⭐⭐ | 17 | 2000 |
+| Mago Ancião | ⭐⭐⭐⭐⭐⭐⭐ | 20 | 2400 |
 
-**Por que Next.js e não React puro?**
-Facilidade de deploy no Vercel, estrutura de rotas organizada e possibilidade de adicionar funcionalidades server-side no futuro sem mudar a stack.
+## How the Analysis Works
 
-## Roadmap futuro
+After the game ends, Stockfish re-evaluates every position in the game at a fixed depth. For each move, the engine computes the centipawn loss relative to the best available continuation and assigns a classification:
 
-- [ ] Bot Professor com feedback via IA (Claude API)
-- [ ] Sistema de login com persistência em nuvem
-- [ ] Puzzles táticos
-- [ ] Modo multiplayer local
+| Classification | Meaning |
+|---|---|
+| Brilhante | Only top move in a critical, non-obvious position |
+| Excelente | Best or near-best move; negligible loss |
+| Boa | Solid move with minor inaccuracy |
+| Imprecisão | Suboptimal; noticeable but not decisive loss |
+| Erro | Significant loss of advantage |
+| Chance Perdida | Missed a clear winning opportunity |
+| Capivarada | Severe blunder; changes the outcome of the game |
 
-## Licença
+Your overall **accuracy score** is derived from the average centipawn loss across all your moves. The advantage graph plots the engine evaluation after each half-move, with flag markers on notable moments. In review mode, clicking any move on the graph or the move list takes you to that position; the "Show best move" button overlays the engine's preferred move as an arrow on the board.
+
+## Project Structure
+
+```
+frontend/src/
+  app/
+    page.tsx              # Home — bot selection
+    game/page.tsx         # Live game screen
+    review/page.tsx       # Post-game analysis and review
+  components/
+    board/ChessBoard.tsx
+    review/               # AdvantageBar, AdvantageGraph, MoveSummary, PdfExportButton
+    game/MoveHistory.tsx
+  hooks/
+    useGame.ts            # Game state
+    useStockfish.ts       # Bot AI
+    useStockfishAnalysis.ts # Post-game analysis pipeline
+    useBestMove.ts        # Best-move lookup during review
+  data/bots.ts            # Single source of truth for bot data
+  types/game.types.ts
+  utils/                  # move-classifier.ts, pgn-builder.ts, sound.ts
+```
+
+## License
 
 MIT
