@@ -11,6 +11,7 @@ export type Bot = {
   name: string
   level: BotLevel
   skillLevel: number // 0=filhote | 3=iniciante | 6=amador | 10=intermediario | 14=avancado | 17=guerreiro | 20=mestre
+  rating: number    // ELO aproximado
   description: string
 }
 
