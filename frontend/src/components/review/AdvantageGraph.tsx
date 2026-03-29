@@ -28,7 +28,7 @@ export function AdvantageGraph({ scores, currentIndex, onMoveClick, height = 64 
   })
 
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-3">
+    <div className="rounded-lg border border-neutral-700 bg-neutral-600 p-3">
       <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-neutral-500">
         Vantagem
       </p>
