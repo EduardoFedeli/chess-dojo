@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { CLASSIFICATION_META } from '@/utils/move-classifier'
 import type { AnalysisResult, MoveClassification, SavedGame } from '@/types/game.types'
 
+// Somente as classificações mais graves geram flags no PDF (inaccuracy é omitida por clareza visual)
 const FLAG_CLASSIFICATIONS: MoveClassification[] = ['brilliant', 'missed_win', 'mistake', 'blunder']
 
-const FLAG_COLORS: Record<string, [number, number, number]> = {
+const FLAG_COLORS: Partial<Record<MoveClassification, [number, number, number]>> = {
   brilliant:  [167, 139, 250],
   missed_win: [248, 113, 113],
   mistake:    [238, 150,  75],
@@ -83,8 +84,8 @@ export function PdfExportButton({
         doc.lines(segs, pts[0][0], pts[0][1], [1, 1], 'F', true)
       }
 
-      // Fundo cinza claro
-      doc.setFillColor(240, 240, 240)
+      // Fundo branco
+      doc.setFillColor(255, 255, 255)
       doc.rect(gX, gY, gW, gH, 'F')
 
       // Polígono positivo (acima de zero) — claro (brancas vencendo)
@@ -106,8 +107,10 @@ export function PdfExportButton({
       // Flags: linhas verticais coloridas nas jogadas notáveis
       result.evaluations.forEach((ev, i) => {
         if (!FLAG_CLASSIFICATIONS.includes(ev.classification)) return
+        const color = FLAG_COLORS[ev.classification]
+        if (!color) return
         const x = indexToX(i + 1)
-        const [r, g, b] = FLAG_COLORS[ev.classification]
+        const [r, g, b] = color
         doc.setDrawColor(r, g, b).setLineWidth(0.4)
         doc.line(x, gY, x, gY + gH)
       })
