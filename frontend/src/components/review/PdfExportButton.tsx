@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { BOTS } from '@/data/bots'
 import { CLASSIFICATION_META } from '@/utils/move-classifier'
 import type { AnalysisResult, MoveClassification, SavedGame } from '@/types/game.types'
 
@@ -41,7 +42,9 @@ export function PdfExportButton({
       const dateStr    = new Date(savedGame.date).toLocaleDateString('pt-BR')
       const resultText = savedGame.result === 'won' ? 'Vitoria' : savedGame.result === 'lost' ? 'Derrota' : 'Empate'
       const colorText  = savedGame.playerColor === 'white' ? 'Brancas' : 'Pretas'
-      const botName    = savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)
+      const pdfBot    = BOTS.find(b => b.id === savedGame.botLevel)
+      const botName   = pdfBot?.name ?? savedGame.botLevel.charAt(0).toUpperCase() + savedGame.botLevel.slice(1)
+      const botRating = pdfBot?.rating
       const moves      = savedGame.moves
 
       // ── Cabeçalho ────────────────────────────────────────────────────────────
@@ -49,7 +52,8 @@ export function PdfExportButton({
       doc.text('Chess Guild - Revisao de Partida', M, y); y += 7
 
       doc.setFontSize(9).setFont('helvetica', 'normal').setTextColor(100, 100, 100)
-      doc.text(`${dateStr}  vs ${botName}  ${colorText}  ${resultText}  ${moves.length} jogadas`, M, y); y += 4
+      const botLabel = botRating ? `${botName} (${botRating} ELO)` : botName
+      doc.text(`${dateStr}  vs ${botLabel}  ${colorText}  ${resultText}  ${moves.length} jogadas`, M, y); y += 4
 
       doc.setDrawColor(180, 180, 180).line(M, y, W - M, y); y += 6
 
@@ -138,6 +142,33 @@ export function PdfExportButton({
 
       y += gH + 8
 
+      // ── Legenda do gráfico ────────────────────────────────────────────────────
+      // Two rows of legend items: graph colors + flag colors
+      const legendItems: { label: string; r: number; g: number; b: number }[] = [
+        { label: 'Brancas vencendo', r: 220, g: 220, b: 220 },
+        { label: 'Pretas vencendo',  r:  60, g:  60, b:  60 },
+        { label: 'Brilhante',        r: 167, g: 139, b: 250 },
+        { label: 'Chance Perdida',   r: 248, g: 113, b: 113 },
+        { label: 'Erro',             r: 238, g: 150, b:  75 },
+        { label: 'Capivarada',       r: 239, g:  68, b:  68 },
+      ]
+      const sqS = 3   // square size in mm
+      const lgCols = 3
+      const lgCellW = (W - 2 * M) / lgCols
+      legendItems.forEach((item, i) => {
+        const col = i % lgCols
+        const row = Math.floor(i / lgCols)
+        const lx = M + col * lgCellW
+        const ly = y + row * 5
+        doc.setFillColor(item.r, item.g, item.b)
+        doc.setDrawColor(150, 150, 150).setLineWidth(0.2)
+        doc.rect(lx, ly - sqS + 0.5, sqS, sqS, 'FD')
+        doc.setFontSize(7).setFont('helvetica', 'normal').setTextColor(80, 80, 80)
+        doc.text(item.label, lx + sqS + 1.5, ly)
+      })
+      const legendRows = Math.ceil(legendItems.length / lgCols)
+      y += legendRows * 5 + 3
+
       doc.setDrawColor(180, 180, 180).line(M, y, W - M, y); y += 6
 
       // ── Precisão do jogador ───────────────────────────────────────────────────
@@ -169,10 +200,19 @@ export function PdfExportButton({
       doc.setDrawColor(180, 180, 180).line(M, y, W - M, y); y += 6
 
       // ── Lista de jogadas (duas colunas) ───────────────────────────────────────
-      doc.setFontSize(8).setFont('helvetica', 'normal')
       const colW = (W - M * 2) / 2
       const rowH = 5
       const numW = 8
+
+      // Cabeçalho das colunas
+      const whiteLabel = savedGame.playerColor === 'white' ? 'Voce (Brancas)' : 'Bot (Brancas)'
+      const blackLabel = savedGame.playerColor === 'black' ? 'Voce (Pretas)' : 'Bot (Pretas)'
+      doc.setFontSize(7).setFont('helvetica', 'bold').setTextColor(100, 100, 100)
+      doc.text(whiteLabel, M + numW, y)
+      doc.text(blackLabel, M + colW, y)
+      y += 5
+
+      doc.setFontSize(8).setFont('helvetica', 'normal')
 
       for (let i = 0; i < moves.length; i += 2) {
         ensureSpace(rowH)
