@@ -34,9 +34,17 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Bot cards */}
-      <div className="flex flex-col gap-4 sm:flex-row">
-        {BOTS.map((bot) => {
+      {/* Bot cards — grid 3×2 + Mago Ancião */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 220px) 260px',
+          gridTemplateRows: 'repeat(2, 1fr)',
+          gap: '16px',
+        }}
+      >
+        {/* Cards regulares: primeiros 6 bots */}
+        {BOTS.filter(bot => bot.level !== 'mestre').map((bot, index) => {
           const isSelected = selectedBot === bot.level
           const accent     = BOT_ACCENT[bot.level]
           const stars      = BOT_STARS[bot.level]
@@ -45,70 +53,156 @@ export default function Home() {
               key={bot.id}
               onClick={() => setSelectedBot(bot.level)}
               style={{
+                backgroundColor: '#000000',
                 borderColor:     isSelected ? accent : 'transparent',
                 boxShadow:       isSelected ? `0 0 0 1px ${accent}, 0 0 20px ${accent}33` : undefined,
-                backgroundColor: isSelected ? `${accent}18` : '#111111',
                 outline: 'none',
               }}
-              className="relative flex w-64 flex-col items-center gap-3 rounded-2xl border-2 px-5 pb-5 pt-3 text-center transition-all hover:border-neutral-600"
+              className="relative flex flex-col items-center gap-3 rounded-2xl border-2 pb-4 pt-0 text-center transition-all hover:border-neutral-600"
             >
-              {/* Accent stripe */}
-              <div style={{ height: 3, background: accent, width: 'calc(100% + 40px)', marginTop: -12, marginBottom: 4, borderRadius: '10px 10px 0 0' }} />
-              {/* Rank badge */}
+              {/* Stripe colorida no topo */}
+              <div style={{ height: 3, background: accent, width: '100%', borderRadius: '12px 12px 0 0', flexShrink: 0 }} />
+
+              {/* Badge de rank */}
               <div
-                className="absolute top-2 right-3 text-[10px] font-bold tracking-widest"
-                style={{ color: accent, opacity: 0.7 }}
+                className="absolute top-2 right-3 text-[9px] font-bold tracking-widest"
+                style={{ color: accent, opacity: 0.65 }}
               >
-                {['I','II','III','IV','V','VI','VII'][BOTS.indexOf(bot)]}
+                {['I','II','III','IV','V','VI'][index]}
               </div>
+
               {/* Avatar */}
-              <div
-                className="rounded-xl overflow-hidden"
-                style={{
-                  width: 120, height: 120,
-                  boxShadow: isSelected ? `0 0 16px ${accent}66` : '0 2px 12px rgba(0,0,0,0.6)',
-                }}
-              >
+              <div className="overflow-hidden rounded-xl" style={{ width: 160, height: 160, background: '#000' }}>
                 <Image
                   src={`/bots/${bot.image}`}
                   alt={bot.name}
-                  width={120}
-                  height={120}
-                  className="object-cover"
+                  width={160}
+                  height={160}
+                  className="object-contain"
                 />
               </div>
 
-              {/* Name */}
-              <div className="flex min-h-[2.5rem] w-full items-center justify-center">
-                <span
-                  className="text-base font-bold tracking-wide leading-tight text-center"
-                  style={{ color: isSelected ? accent : 'var(--brand-text)' }}
-                >
-                  {bot.name}
-                </span>
-              </div>
+              {/* Nome */}
+              <span
+                className="text-sm font-bold tracking-wide leading-tight"
+                style={{ color: isSelected ? accent : 'var(--brand-text)' }}
+              >
+                {bot.name}
+              </span>
 
-              {/* Stars */}
+              {/* Estrelas */}
               <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                  <span key={n} style={{ color: n <= stars ? '#EE964B' : '#374151', fontSize: 11 }}>
-                    ★
-                  </span>
+                {[1,2,3,4,5,6,7].map(n => (
+                  <span key={n} style={{ color: n <= stars ? '#EE964B' : '#374151', fontSize: 10 }}>★</span>
                 ))}
               </div>
 
-              {/* Description */}
-              <span className="text-xs whitespace-nowrap" style={{ color: '#9ca3af' }}>
-                {bot.description}
-              </span>
+              {/* Descrição */}
+              <span className="text-xs" style={{ color: '#9ca3af' }}>{bot.description}</span>
 
-              {/* Rating */}
+              {/* ELO */}
               <span className="text-xs font-semibold" style={{ color: accent }}>
                 ⚔ {bot.rating} ELO
               </span>
             </button>
           )
         })}
+
+        {/* Card especial: Mago Ancião — coluna 4, linhas 1-2 */}
+        {(() => {
+          const mago      = BOTS.find(b => b.level === 'mestre')!
+          const isSelected = selectedBot === 'mestre'
+          return (
+            <button
+              key={mago.id}
+              onClick={() => setSelectedBot('mestre')}
+              style={{
+                gridColumn:      '4',
+                gridRow:         '1 / 3',
+                backgroundColor: '#000000',
+                borderColor:     '#0047AB',
+                boxShadow: isSelected
+                  ? '0 0 0 1px #0047AB, 0 0 30px #0047AB66, 0 0 80px #0047AB22, inset 0 0 40px #0047AB08'
+                  : '0 0 30px #0047AB44, 0 0 60px #0047AB11',
+                outline: 'none',
+              }}
+              className="relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 px-4 py-6 text-center transition-all overflow-hidden"
+            >
+              {/* Efeito de névoa cósmica */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: `
+                    radial-gradient(1px 1px at 20% 15%, #ffffff44 0%, transparent 100%),
+                    radial-gradient(1px 1px at 65% 8%,  #ffffff33 0%, transparent 100%),
+                    radial-gradient(1px 1px at 45% 40%, #0047AB55 0%, transparent 100%),
+                    radial-gradient(1px 1px at 80% 60%, #ffffff22 0%, transparent 100%),
+                    radial-gradient(1px 1px at 10% 70%, #ffffff33 0%, transparent 100%),
+                    radial-gradient(150px 120px at 50% 30%, #0047AB0a 0%, transparent 100%)
+                  `,
+                }}
+              />
+
+              {/* Badge de rank */}
+              <div
+                className="absolute top-3 right-4 text-[10px] font-bold tracking-widest z-10"
+                style={{ color: '#0047AB', opacity: 0.8 }}
+              >
+                VII
+              </div>
+
+              {/* Avatar */}
+              <div className="relative z-10 overflow-hidden rounded-xl" style={{ width: 200, height: 200, background: '#000', boxShadow: '0 0 24px #0047AB44' }}>
+                <Image
+                  src={`/bots/${mago.image}`}
+                  alt={mago.name}
+                  width={200}
+                  height={200}
+                  className="object-contain"
+                />
+              </div>
+
+              {/* Nome */}
+              <span
+                className="relative z-10 text-xl font-black tracking-widest"
+                style={{ color: '#0047AB', textShadow: '0 0 20px #0047AB88' }}
+              >
+                {mago.name}
+              </span>
+
+              {/* Linha divisória */}
+              <div
+                className="relative z-10 w-4/5"
+                style={{ height: 1, background: 'linear-gradient(90deg, transparent, #0047AB66, transparent)' }}
+              />
+
+              {/* Estrelas */}
+              <div className="relative z-10 flex gap-0.5">
+                {[1,2,3,4,5,6,7].map(n => (
+                  <span key={n} style={{ color: '#0047AB', fontSize: 14 }}>★</span>
+                ))}
+              </div>
+
+              {/* Descrição */}
+              <span className="relative z-10 text-xs tracking-wide" style={{ color: '#4B7BBE' }}>
+                {mago.description}
+              </span>
+
+              {/* ELO especial */}
+              <span
+                className="relative z-10 w-4/5 border-t pt-3 text-base font-black"
+                style={{
+                  color:         '#0047AB',
+                  letterSpacing: '3px',
+                  textShadow:    '0 0 16px #0047ABCC',
+                  borderColor:   '#0047AB33',
+                }}
+              >
+                ⚔ ELO ??????
+              </span>
+            </button>
+          )
+        })()}
       </div>
 
       {/* Color picker */}
