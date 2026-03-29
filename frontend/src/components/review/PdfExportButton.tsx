@@ -104,7 +104,7 @@ export function PdfExportButton({
       negPoints.push([gX + gW, midY])
       fillPolygon(negPoints, 60, 60, 60)
 
-      // Flags: linhas verticais coloridas nas jogadas notáveis
+      // Flags: linhas verticais coloridas + número da jogada acima
       result.evaluations.forEach((ev, i) => {
         if (!FLAG_CLASSIFICATIONS.includes(ev.classification)) return
         const color = FLAG_COLORS[ev.classification]
@@ -113,7 +113,20 @@ export function PdfExportButton({
         const [r, g, b] = color
         doc.setDrawColor(r, g, b).setLineWidth(0.4)
         doc.line(x, gY, x, gY + gH)
+        // Número da jogada acima da flag
+        doc.setFontSize(5).setFont('helvetica', 'bold').setTextColor(r, g, b)
+        doc.text(String(i + 1), x, gY - 1, { align: 'center' })
       })
+
+      // Eixo X: ticks a cada 5 jogadas abaixo do gráfico
+      doc.setFontSize(5).setFont('helvetica', 'normal').setTextColor(120, 120, 120)
+      doc.setDrawColor(150, 150, 150).setLineWidth(0.2)
+      const totalMoves = graphScores.length - 1
+      for (let n = 5; n <= totalMoves; n += 5) {
+        const tx = indexToX(n)
+        doc.line(tx, gY + gH, tx, gY + gH + 1)
+        doc.text(String(n), tx, gY + gH + 3.5, { align: 'center' })
+      }
 
       // Linha central (y=0)
       doc.setDrawColor(100, 100, 100).setLineWidth(0.2)
@@ -123,7 +136,7 @@ export function PdfExportButton({
       doc.setDrawColor(180, 180, 180).setLineWidth(0.3)
       doc.rect(gX, gY, gW, gH)
 
-      y += gH + 4
+      y += gH + 8
 
       doc.setDrawColor(180, 180, 180).line(M, y, W - M, y); y += 6
 
