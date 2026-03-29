@@ -61,7 +61,7 @@ export default function Home() {
                 }}
               >
                 <Image
-                  src={`/bots/${bot.id}.png`}
+                  src={`/bots/${bot.image}`}
                   alt={bot.name}
                   width={80}
                   height={80}
