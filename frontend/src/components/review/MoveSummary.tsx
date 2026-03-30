@@ -28,30 +28,27 @@ export function MoveSummary({ evaluations, accuracy, compact = false }: MoveSumm
 
   if (compact) {
     return (
-      <div
-        className="rounded-xl px-4 py-3"
-        style={{ background: '#171717', border: '1px solid #262626' }}
-      >
-        {/* Linha de precisão */}
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-xs text-neutral-400">Precisão</span>
-          <span className="text-sm font-black" style={{ color: '#6B8F71' }}>{accuracy}%</span>
+      <div className="flex flex-col gap-3">
+        {/* Linha de precisão com fontes maiores */}
+        <div className="flex items-center gap-4 border-b border-neutral-800/40 pb-3">
+          <span className="text-sm font-semibold tracking-wide text-neutral-400">Precisão</span>
+          <span className="text-xl font-black" style={{ color: '#6B8F71' }}>{accuracy}%</span>
         </div>
-        {/* Grid 3 colunas — 7 classificações ficam em 3+3+1 */}
-        <div className="grid gap-x-3 gap-y-1" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+        
+        {/* Grid 3 colunas com fontes maiores e respiro */}
+        <div className="grid gap-x-4 gap-y-2.5" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
           {(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map((key) => {
             const meta  = CLASSIFICATION_META[key]
             const count = counts[key]
             return (
               <span
                 key={key}
-                className="flex items-center gap-1 text-xs tabular-nums"
-                style={{ color: meta.color }}
+                className="flex items-center gap-1.5 tabular-nums"
                 title={meta.label}
               >
-                <span>{meta.emoji}</span>
-                <span className="text-neutral-400 truncate text-[10px]">{meta.label}</span>
-                <span className="font-bold">{count}</span>
+                <span className="text-sm">{meta.emoji}</span>
+                <span className="truncate text-xs text-neutral-300" style={{ color: meta.color }}>{meta.label}</span>
+                <span className="ml-auto text-sm font-bold" style={{ color: meta.color }}>{count}</span>
               </span>
             )
           })}
@@ -60,6 +57,7 @@ export function MoveSummary({ evaluations, accuracy, compact = false }: MoveSumm
     )
   }
 
+  // Fallback (versão de 1 coluna). Mantido por segurança se algum outro lugar do app usar.
   return (
     <div className="flex flex-col gap-3">
       {/* Precisão */}
@@ -97,7 +95,7 @@ export function MoveSummary({ evaluations, accuracy, compact = false }: MoveSumm
                       </span>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="left" className="max-w-48">
+                  <TooltipContent side="left" className="max-w-48 bg-neutral-900 border-neutral-800 text-white">
                     <p className="text-xs">{meta.description}</p>
                   </TooltipContent>
                 </Tooltip>
