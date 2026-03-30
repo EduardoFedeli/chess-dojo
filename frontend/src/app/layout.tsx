@@ -20,6 +20,14 @@ export const metadata: Metadata = {
   description: 'Evolua no xadrez com progressão RPG. Jogue contra bots, analise suas partidas e suba de nível.',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
