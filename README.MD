@@ -1,109 +1,90 @@
-# Chess Guild
+# ♟️ Chess Guild
 
-**Practice chess against AI bots. Analyze every move. Export your review as PDF.**
+**Desafie bots lendários, analise suas jogadas e domine o tabuleiro.**
 
-Chess Guild is a fully client-side chess application built as a portfolio project. There is no backend and no account required, everything runs in the browser, powered by Stockfish 18 WebAssembly.
+O **Chess Guild** é uma plataforma de xadrez imersiva, inspirada em elementos de RPG, desenvolvida inteiramente no client-side. O projeto foi concebido para oferecer não apenas o jogo, mas uma ferramenta completa de estudo e evolução para enxadristas.
 
-The core loop is simple: pick a bot, play a game, then review every move with engine-powered analysis. Each move is classified, your accuracy is scored, and you can download a complete PDF report of the session.
+Tudo acontece no navegador: desde a engine de IA (**Stockfish 18 via WebAssembly**) até a geração de relatórios detalhados em PDF. Sem back-end, sem latência, apenas performance.
 
-## Features
+---
 
-- Play against 7 AI bots with increasing difficulty (ELO 600 → 2400)
-- Choose piece color, board theme (5 options), and piece style
-- Live move history during the game
-- Sound effects for moves, captures, check, and game end
-- Post-game analysis with per-move classification powered by Stockfish
-- Accuracy score based on engine evaluation
-- Advantage graph with notable-move flags
-- "Show best move" button in review - displays the engine's suggestion with an arrow and highlight
-- Full PDF export of the game review (legend, graph, and annotated move list)
-- 100% local, no login, no data sent anywhere
+## 🚀 Diferenciais do Projeto
 
-## Tech Stack
+* **Bots com Personalidade:** 7 níveis de dificuldade, do Aprendiz ao Mago Ancião (ELO 600 → 2400+).
+* **Análise de Precisão:** Sistema de classificação de jogadas (Brilhante, Excelente, Erro, etc.) baseado em perda de centipawns.
+* **UI/UX Imersiva:** Interface moderna com efeitos de inclinação 3D (Tilt), partículas dinâmicas e temas customizáveis.
+* **Relatórios PDF:** Exporte o histórico da sua partida, gráfico de vantagem e precisão em um documento profissional.
+* **Privacidade Total:** 100% local. Nenhum dado sai do seu computador.
 
-| Layer | Technology |
+---
+
+## 🛠️ Tech Stack
+
+O projeto utiliza o que há de mais moderno no ecossistema Web para garantir performance e manutenibilidade.
+
+| Camada | Tecnologia |
 |---|---|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript (strict) |
-| UI | React 19, shadcn/ui, Tailwind CSS v4, Radix UI |
-| Chess logic | chess.js |
-| Board | react-chessboard v5 |
-| Engine | Stockfish 18 (WebAssembly, runs in-browser) |
-| PDF export | jsPDF |
-| Storage | localStorage |
-| Deploy | Vercel |
+| **Framework** | Next.js 15 (App Router) |
+| **Linguagem** | TypeScript (Strict Mode) |
+| **Styling** | Tailwind CSS v4 |
+| **Componentes** | React 19, shadcn/ui, Radix UI |
+| **Chess Engine** | Stockfish 18 (WASM) |
+| **Lógica de Jogo** | Chess.js + React-Chessboard v5 |
+| **Exportação** | jsPDF |
 
-## Getting Started
+---
 
-```bash
-# Clone the repository
-git clone https://github.com/EduardoFedeli/chess-guild.git
+## 🧙‍♂️ Progressão de Bots (The Ladder)
 
-# Install dependencies and run
-cd chess-dojo/frontend
-npm install
-npm run dev
-```
+Os bots foram calibrados para simular o comportamento humano em diferentes faixas de rating.
 
-Open [http://localhost:3000](http://localhost:3000).
-
-```bash
-npm run build   # production build / type-check
-npm run lint    # ESLint
-```
-
-## Bot Progression
-
-Seven bots form an RPG-style ladder from beginner to near-master level.
-
-| Bot | Stars | Stockfish Skill | Approx. ELO |
+| Bot | Rank | ELO Estimado | Estilo de Jogo |
 |---|---|---|---|
-| Aprendiz | ⭐ | 0 | 600 |
-| Escudeiro | ⭐⭐ | 3 | 900 |
-| Caçador | ⭐⭐⭐ | 6 | 1200 |
-| Cavaleiro | ⭐⭐⭐⭐ | 10 | 1500 |
-| Veterano | ⭐⭐⭐⭐⭐ | 14 | 1800 |
-| Mestre de Guerra | ⭐⭐⭐⭐⭐⭐ | 17 | 2000 |
-| Mago Ancião | ⭐⭐⭐⭐⭐⭐⭐ | 20 | 2400 |
+| **Aprendiz** | I | 600 | Iniciante, foco em aprender movimentos básicos. |
+| **Escudeiro** | II | 900 | Começa a entender táticas de abertura. |
+| **Caçador** | III | 1200 | Jogo posicional básico e táticas de garfo. |
+| **Cavaleiro** | IV | 1500 | Sólido, pune erros táticos graves. |
+| **Veterano** | V | 1800 | Estrategista, domina finais de partida. |
+| **Mestre de Guerra** | VI | 2000 | Brutal, exige precisão absoluta do jogador. |
+| **Mago Ancião** | VII | 2400+ | Quase imbatível, nível de Mestre Internacional. |
 
-## How the Analysis Works
+---
 
-After the game ends, Stockfish re-evaluates every position in the game at a fixed depth. For each move, the engine computes the centipawn loss relative to the best available continuation and assigns a classification:
+## 📈 Sistema de Análise
 
-| Classification | Meaning |
-|---|---|
-| Brilhante | Only top move in a critical, non-obvious position |
-| Excelente | Best or near-best move; negligible loss |
-| Boa | Solid move with minor inaccuracy |
-| Imprecisão | Suboptimal; noticeable but not decisive loss |
-| Erro | Significant loss of advantage |
-| Chance Perdida | Missed a clear winning opportunity |
-| Capivarada | Severe blunder; changes the outcome of the game |
+Após cada partida, a engine processa todos os lances em profundidade para gerar um score de precisão.
 
-Your overall **accuracy score** is derived from the average centipawn loss across all your moves. The advantage graph plots the engine evaluation after each half-move, with flag markers on notable moments. In review mode, clicking any move on the graph or the move list takes you to that position; the "Show best move" button overlays the engine's preferred move as an arrow on the board.
+* ✨ **Brilhante:** O único lance vencedor em uma posição crítica.
+* ✅ **Excelente:** A melhor escolha da engine.
+* ⚠️ **Imprecisão:** Um lance que cede vantagem sutil.
+* ❌ **Capivarada (Blunder):** Um erro grave que altera drasticamente o resultado.
 
-## Project Structure
+---
 
-```
-frontend/src/
-  app/
-    page.tsx              # Home — bot selection
-    game/page.tsx         # Live game screen
-    review/page.tsx       # Post-game analysis and review
-  components/
-    board/ChessBoard.tsx
-    review/               # AdvantageBar, AdvantageGraph, MoveSummary, PdfExportButton
-    game/MoveHistory.tsx
-  hooks/
-    useGame.ts            # Game state
-    useStockfish.ts       # Bot AI
-    useStockfishAnalysis.ts # Post-game analysis pipeline
-    useBestMove.ts        # Best-move lookup during review
-  data/bots.ts            # Single source of truth for bot data
-  types/game.types.ts
-  utils/                  # move-classifier.ts, pgn-builder.ts, sound.ts
-```
+## 🗺️ Roadmap (Implementações Futuras)
 
-## License
+O Chess Guild está em constante evolução. Estas são as próximas funcionalidades planejadas:
 
-MIT
+- [ ] **AI Mentor:** Integrar uma IA (LLM) que atue como um professor, explicando em linguagem natural *por que* um lance foi considerado um erro.
+- [ ] **Sistema de Login & Cloud Sync:** Implementação de autenticação para armazenar o histórico global de partidas e evolução de ELO do usuário.
+- [ ] **Guild Expansion:** Adição de novos bots com estilos de jogo específicos (agressivos, defensivos, gambiteiros).
+- [ ] **Multiplayer Local:** Modo de dois jogadores no mesmo dispositivo com relógio de xadrez integrado.
+
+---
+
+## 🔧 Instalação e Uso Local
+
+```bash
+# Clone o repositório
+git clone [https://github.com/EduardoFedeli/Chess-Guild.git](https://github.com/EduardoFedeli/Chess-Guild.git)
+
+# Entre na pasta e instale as dependências
+cd Chess-Guild
+npm install
+
+# Inicie o servidor de desenvolvimento
+npm run dev
+
+Abra http://localhost:3000 no seu navegador.
+
+
