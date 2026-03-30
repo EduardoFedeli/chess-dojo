@@ -66,10 +66,11 @@ function ReviewContent() {
   // --- Estado de análise profunda ---
   const [deepAnalysisEnabled, setDeepAnalysisEnabled] = useState(false)
 
-  const [boardSize, setBoardSize] = useState(500)
+  const [boardSize, setBoardSize] = useState(600)
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setBoardSize(Math.min(window.innerHeight - 140, 700))
+    // Reduzi a margem subtraída (de 140 para 80) e aumentei o teto (de 700 para 900).
+    // Agora o tabuleiro tem permissão para crescer e preencher o quadrado vermelho!
+    setBoardSize(Math.min(window.innerHeight - 80, 900))
   }, [])
 
   // Redireciona para home se não houver partida salva
@@ -179,7 +180,7 @@ function ReviewContent() {
       </div>
 
       {/* Container Central: Sem limite de largura máxima esmagando os itens */}
-      <div className="mx-auto flex w-full max-w-[500px] flex-col gap-4 md:max-w-none md:w-auto md:flex-row md:items-stretch md:justify-center md:gap-8">
+      <div className="flex shrink-0 gap-2 md:gap-4 md:items-center">
         
         {/* COLUNA ESQUERDA: Barra de vantagem + Tabuleiro + Controles */}
         <div className="flex shrink-0 gap-2 md:gap-4">
