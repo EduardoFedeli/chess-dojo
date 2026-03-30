@@ -65,12 +65,12 @@ export default function Home() {
               </div>
 
               {/* Avatar */}
-              <div className="overflow-hidden rounded-xl w-24 h-24 md:w-[140px] md:h-[140px]" style={{ background: '#000' }}>
+              <div className="overflow-hidden rounded-xl w-24 h-24 md:w-40 md:h-40" style={{ background: '#000' }}>
                 <Image
                   src={`/bots/${bot.image}`}
                   alt={bot.name}
-                  width={140}
-                  height={140}
+                  width={160}
+                  height={160}
                   className="object-contain w-full h-full"
                 />
               </div>
@@ -118,7 +118,7 @@ export default function Home() {
                   : '0 0 30px #0047AB44, 0 0 60px #0047AB11',
                 outline: 'none',
               }}
-              className="mago-card col-span-2 relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 px-4 py-6 text-center transition-all overflow-hidden"
+              className="mago-card relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 px-4 py-6 text-center transition-all overflow-hidden"
             >
               {/* Efeito de névoa cósmica */}
               <div
@@ -144,12 +144,12 @@ export default function Home() {
               </div>
 
               {/* Avatar */}
-              <div className="relative z-10 overflow-hidden rounded-xl w-[140px] h-[140px] md:w-[160px] md:h-[160px]" style={{ background: '#000' }}>
+              <div className="relative z-10 overflow-hidden rounded-xl w-36 h-36 md:w-[200px] md:h-[200px]" style={{ background: '#000' }}>
                 <Image
                   src={`/bots/${mago.image}`}
                   alt={mago.name}
-                  width={160}
-                  height={160}
+                  width={200}
+                  height={200}
                   className="object-contain w-full h-full"
                 />
               </div>

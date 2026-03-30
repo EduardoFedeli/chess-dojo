@@ -88,7 +88,12 @@ function GameContent() {
 
   const [boardSize, setBoardSize] = useState(500)
   useEffect(() => {
-    setBoardSize(Math.min(window.innerHeight - 120, 700))
+    const isMobile = window.innerWidth < 768
+    if (isMobile) {
+      setBoardSize(Math.min(window.innerWidth - 16, 480))
+    } else {
+      setBoardSize(Math.min(window.innerHeight - 120, 700))
+    }
   }, [])
 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
@@ -209,11 +214,11 @@ function GameContent() {
     <main
       className="relative flex h-screen overflow-hidden items-center justify-center p-4"
     >
-      {/* Wrapper: tabuleiro + painel lado a lado */}
-      <div className="flex items-start gap-6">
+      {/* Wrapper: tabuleiro + painel lado a lado no desktop, coluna no mobile */}
+      <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6 w-full md:w-auto">
 
         {/* Coluna esquerda: tabuleiro + controles */}
-        <div className="flex flex-col gap-4" style={{ width: boardSize, flexShrink: 0 }}>
+        <div className="flex flex-col gap-4 mx-auto md:mx-0" style={{ width: boardSize, flexShrink: 0 }}>
           <div style={{ width: boardSize, height: boardSize }}>
             <ChessBoard
               fen={fen}
@@ -290,7 +295,7 @@ function GameContent() {
         </div>
 
         {/* Coluna direita: bot info + histórico */}
-        <div className="flex flex-col gap-2" style={{ width: 280, height: boardSize, flexShrink: 0 }}>
+        <div className="flex flex-col gap-2 w-full md:w-auto md:flex-shrink-0" style={{ height: boardSize }}>
           {currentBot && (
             <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2">
               <span className="text-sm font-semibold text-white">⚔ {currentBot.name}</span>
