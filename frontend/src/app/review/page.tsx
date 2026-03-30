@@ -241,7 +241,6 @@ function ReviewContent() {
         {/* COLUNA DIREITA UNIFICADA: Tudo dentro de um único painel */}
         <div 
           className="flex w-full flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-md md:w-[480px] md:shrink-0"
-          style={{ height: typeof window !== 'undefined' && window.innerWidth >= 768 ? boardSize : 'auto' }}
         >
           {/* 1. Cabeçalho (Sempre visível no topo do painel) */}
           <div className="shrink-0 border-b border-neutral-800/60 px-5 py-4">
@@ -314,7 +313,7 @@ function ReviewContent() {
                 <MoveSummary
                   evaluations={activeResult.evaluations}
                   accuracy={playerAccuracy ?? activeResult.accuracy}
-                  compact={true} /* Compacto para salvar espaço vertical */
+                  compact={false} /* Compacto para salvar espaço vertical */
                 />
               </div>
 
