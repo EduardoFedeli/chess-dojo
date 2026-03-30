@@ -176,7 +176,7 @@
 /* Desktop: restaura o layout original 3×2 + Mago na coluna 4 */
 @media (min-width: 768px) {
   .bot-grid {
-    grid-template-columns: repeat(3, 220px) 260px;
+    grid-template-columns: repeat(4, 260px);
     grid-template-rows: repeat(2, 1fr);
     gap: 16px;
   }

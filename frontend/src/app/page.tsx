@@ -65,12 +65,12 @@ export default function Home() {
               </div>
 
               {/* Avatar */}
-              <div className="overflow-hidden rounded-xl w-24 h-24 md:w-40 md:h-40" style={{ background: '#000' }}>
+              <div className="overflow-hidden rounded-xl w-24 h-24 md:w-[190px] md:h-[190px]" style={{ background: '#000' }}>
                 <Image
                   src={`/bots/${bot.image}`}
                   alt={bot.name}
-                  width={160}
-                  height={160}
+                  width={190}
+                  height={190}
                   className="object-contain w-full h-full"
                 />
               </div>
@@ -144,12 +144,12 @@ export default function Home() {
               </div>
 
               {/* Avatar */}
-              <div className="relative z-10 overflow-hidden rounded-xl w-36 h-36 md:w-[200px] md:h-[200px]" style={{ background: '#000' }}>
+              <div className="relative z-10 overflow-hidden rounded-xl w-36 h-36 md:w-[220px] md:h-[220px]" style={{ background: '#000' }}>
                 <Image
                   src={`/bots/${mago.image}`}
                   alt={mago.name}
-                  width={200}
-                  height={200}
+                  width={220}
+                  height={220}
                   className="object-contain w-full h-full"
                 />
               </div>
