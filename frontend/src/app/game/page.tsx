@@ -212,7 +212,7 @@ function GameContent() {
 
   return (
     <main
-      className="relative flex h-screen overflow-hidden items-center justify-center p-4"
+      className="relative flex items-center justify-center p-4 md:h-screen md:overflow-hidden"
     >
       {/* Wrapper: tabuleiro + painel lado a lado no desktop, coluna no mobile */}
       <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6 w-full md:w-auto">
