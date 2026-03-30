@@ -313,7 +313,7 @@ function ReviewContent() {
                 <MoveSummary
                   evaluations={activeResult.evaluations}
                   accuracy={playerAccuracy ?? activeResult.accuracy}
-                  compact={false} /* Compacto para salvar espaço vertical */
+                  compact={true} /* Compacto para salvar espaço vertical */
                 />
               </div>
 
