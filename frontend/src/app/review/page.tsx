@@ -238,17 +238,16 @@ function ReviewContent() {
         </div>
 
         {/* COLUNA DIREITA: Info, Gráfico, Resumo, Jogadas */}
-        {/* Largura aumentada para 500px e gap maior para não ficar socado */}
         <div 
           className="flex w-full flex-col gap-4 pb-8 md:w-[500px] md:shrink-0 md:pb-0"
           style={{ height: typeof window !== 'undefined' && window.innerWidth >= 768 ? boardSize : 'auto' }}
         >
           {/* 1. Cabeçalho */}
-          <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-5 py-4 shadow-lg">
+          <div className="shrink-0 rounded-xl border border-neutral-800 bg-[#0a0a0a]/90 px-5 py-4 shadow-lg backdrop-blur-sm">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               <span className="text-base font-bold text-white">Revisão</span>
-              <span className="text-xs text-neutral-500">📅 {dateStr}</span>
-              <span className="text-xs font-semibold text-neutral-400">
+              <span className="text-xs text-neutral-400">📅 {dateStr}</span>
+              <span className="text-xs font-semibold text-neutral-300">
                 🤖 vs {botName}{botRating ? ` (${botRating})` : ''}
               </span>
               <span className="text-xs text-neutral-400">
@@ -264,7 +263,7 @@ function ReviewContent() {
 
           {/* Estado: analisando (profunda) */}
           {isDeepAnalyzing && (
-            <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 p-5 shadow-lg">
+            <div className="shrink-0 rounded-xl border border-neutral-800 bg-[#0a0a0a]/90 p-5 shadow-lg backdrop-blur-sm">
               <p className="mb-3 text-xs font-bold uppercase tracking-wider text-neutral-400">
                 Análise profunda em andamento...
               </p>
@@ -284,7 +283,7 @@ function ReviewContent() {
           {!activeResult && !isDeepAnalyzing && (
             <button
               onClick={() => setDeepAnalysisEnabled(true)}
-              className="shrink-0 w-full rounded-xl py-4 text-base font-black tracking-wide transition-all hover:opacity-90 shadow-lg"
+              className="shrink-0 w-full rounded-xl py-4 text-base font-black tracking-wide shadow-lg transition-all hover:opacity-90"
               style={{ backgroundColor: '#6B8F71', color: '#000' }}
             >
               Começar Análise
@@ -296,32 +295,33 @@ function ReviewContent() {
             <>
               {/* 2. Gráfico compacto */}
               {graphScores.length > 0 && (
-                <div className="shrink-0">
+                <div className="shrink-0 rounded-xl border border-neutral-800 bg-[#0a0a0a]/90 p-3 shadow-lg backdrop-blur-sm">
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500">Vantagem</p>
                   <AdvantageGraph
                     scores={graphScores}
                     currentIndex={currentIndex}
                     onMoveClick={goTo}
-                    height={110} 
+                    height={90} 
                   />
                 </div>
               )}
 
-              {/* 3. Resumo */}
-              <div className="shrink-0">
+              {/* 3. Resumo de Precisão (Aumentado e com fundo unificado) */}
+              <div className="shrink-0 rounded-xl border border-neutral-800 bg-[#0a0a0a]/90 p-4 shadow-lg backdrop-blur-sm">
                 <MoveSummary
                   evaluations={activeResult.evaluations}
                   accuracy={playerAccuracy ?? activeResult.accuracy}
-                  compact
+                  compact={false} /* Removi o compact para os textos ficarem maiores naturalmente se o componente suportar */
                 />
               </div>
 
               {/* 4. Lista de jogadas — flex-1 (esticar), scroll interno */}
-              <div className="flex min-h-[180px] flex-1 flex-col overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950 shadow-lg">
-                <p className="shrink-0 px-5 pt-4 pb-2 text-xs font-bold uppercase tracking-widest text-neutral-500 border-b border-neutral-800/50">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]/90 shadow-lg backdrop-blur-sm">
+                <p className="shrink-0 border-b border-neutral-800/50 px-5 pb-2 pt-4 text-xs font-bold uppercase tracking-widest text-neutral-500">
                   Jogadas
                 </p>
                 <div className="flex-1 overflow-y-auto px-5 py-3" style={{ scrollbarWidth: 'thin' }}>
-                  <div className="flex flex-col gap-1 text-xs font-mono">
+                  <div className="flex flex-col gap-1 text-sm font-mono">
                     {moves.reduce<{ white: GameMove; black: GameMove | null; wIdx: number; bIdx: number | null }[]>((rows, move, i) => {
                       if (i % 2 === 0) rows.push({ white: move, black: null, wIdx: i + 1, bIdx: null })
                       else { rows[rows.length - 1].black = move; rows[rows.length - 1].bIdx = i + 1 }
@@ -334,11 +334,11 @@ function ReviewContent() {
                       const showWBadge = wEval && row.white.color === savedGame.playerColor && NOTABLE.has(wEval.classification)
                       const showBBadge = bEval && row.black?.color === savedGame.playerColor && NOTABLE.has(bEval.classification)
                       return (
-                        <div key={rowIdx} className="grid items-center gap-2" style={{ gridTemplateColumns: '24px 1fr 1fr' }}>
-                          <span className="text-neutral-600 font-bold">{rowIdx + 1}.</span>
+                        <div key={rowIdx} className="grid items-center gap-2" style={{ gridTemplateColumns: '30px 1fr 1fr' }}>
+                          <span className="font-bold text-neutral-600">{rowIdx + 1}.</span>
                           <button
                             onClick={() => goTo(row.wIdx)}
-                            className="flex items-center gap-1.5 rounded px-2 py-1 text-left transition-colors hover:bg-neutral-800"
+                            className="flex items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-neutral-800"
                             style={{ background: wActive ? '#EE964B14' : undefined, color: wActive ? '#EE964B' : '#e5e7eb' }}
                           >
                             {row.white.san}
@@ -347,14 +347,14 @@ function ReviewContent() {
                           {row.black ? (
                             <button
                               onClick={() => goTo(row.bIdx!)}
-                              className="flex items-center gap-1.5 rounded px-2 py-1 text-left transition-colors hover:bg-neutral-800"
+                              className="flex items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-neutral-800"
                               style={{ background: bActive ? '#EE964B14' : undefined, color: bActive ? '#EE964B' : '#9ca3af' }}
                             >
                               {row.black.san}
                               {showBBadge && <MoveBadge classification={bEval!.classification} />}
                             </button>
                           ) : (
-                            <span className="text-neutral-700 pl-2">—</span>
+                            <span className="pl-2 text-neutral-700">—</span>
                           )}
                         </div>
                       )
@@ -363,31 +363,36 @@ function ReviewContent() {
                 </div>
               </div>
 
-              {/* 5. Botões de ação */}
-              <div className="flex shrink-0 flex-col gap-2 mt-1">
+              {/* 5. Botões de ação (Fundos sólidos e de destaque) */}
+              <div className="mt-1 flex shrink-0 flex-col gap-2">
                 <button
                   onClick={() => {
                     if (bestMove) clearBestMove()
                     else queryBestMove(currentFen)
                   }}
                   disabled={isBestMoveLoading}
-                  className="w-full rounded-xl border border-neutral-700 py-3 text-sm font-semibold text-neutral-300 transition-colors hover:border-neutral-400 hover:text-white hover:bg-neutral-800/50 disabled:opacity-40"
+                  className="w-full rounded-xl bg-neutral-800 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-neutral-700 disabled:opacity-50"
                 >
                   {isBestMoveLoading ? 'Calculando...' : bestMove ? 'Limpar lance' : 'Ver melhor lance ⚡'}
                 </button>
+                
                 {cachedResult && !deepReady && (
                   <button
                     onClick={() => setDeepAnalysisEnabled(true)}
-                    className="w-full rounded-xl border border-neutral-700 py-3 text-sm font-semibold text-neutral-400 transition-colors hover:border-neutral-400 hover:text-white"
+                    className="w-full rounded-xl border-2 border-[#EE964B]/30 bg-[#EE964B]/10 py-3 text-sm font-bold text-[#EE964B] shadow-md transition-colors hover:bg-[#EE964B]/20"
                   >
                     Re-analisar com depth 10
                   </button>
                 )}
-                <PdfExportButton
-                  savedGame={savedGame}
-                  result={activeResult}
-                  playerAccuracy={playerAccuracy ?? activeResult.accuracy}
-                />
+                
+                {/* Envolvendo o botão do PDF numa div para forçar o estilo se ele for um componente externo que não aceita className direito */}
+                <div className="w-full rounded-xl bg-neutral-900 shadow-md transition-opacity hover:opacity-80">
+                  <PdfExportButton
+                    savedGame={savedGame}
+                    result={activeResult}
+                    playerAccuracy={playerAccuracy ?? activeResult.accuracy}
+                  />
+                </div>
               </div>
             </>
           )}
