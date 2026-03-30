@@ -4,7 +4,10 @@
 
 O **Chess Guild** é uma plataforma de xadrez imersiva, inspirada em elementos de RPG, desenvolvida inteiramente no client-side. O projeto foi concebido para oferecer não apenas o jogo, mas uma ferramenta completa de estudo e evolução para enxadristas.
 
+
 Tudo acontece no navegador: desde a engine de IA (**Stockfish 18 via WebAssembly**) até a geração de relatórios detalhados em PDF. Sem back-end, sem latência, apenas performance.
+
+Link: https://chessguild.vercel.app/
 
 ---
 
