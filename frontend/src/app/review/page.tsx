@@ -238,15 +238,14 @@ function ReviewContent() {
           </div>
         </div>
 
-        {/* COLUNA DIREITA: Info, Gráfico, Resumo, Jogadas */}
-        {/* Aumentei a largura total para 550px e o gap para respiro, mas mantive a altura travada no PC */}
+        {/* COLUNA DIREITA UNIFICADA: Tudo dentro de um único painel */}
         <div 
-          className="flex w-full flex-col gap-5 pb-8 md:w-[550px] md:shrink-0 md:pb-0"
+          className="flex w-full flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-md md:w-[480px] md:shrink-0"
           style={{ height: typeof window !== 'undefined' && window.innerWidth >= 768 ? boardSize : 'auto' }}
         >
-          {/* 1. Cabeçalho (Fundo cinza escuro, Structured Card) */}
-          <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950/80 px-6 py-4 shadow-lg backdrop-blur-sm">
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+          {/* 1. Cabeçalho (Sempre visível no topo do painel) */}
+          <div className="shrink-0 border-b border-neutral-800/60 px-5 py-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
               <span className="text-sm font-bold text-white md:text-base">Revisão</span>
               <span className="text-xs text-neutral-400">📅 {dateStr}</span>
               <span className="text-xs font-semibold text-neutral-300">
@@ -265,8 +264,8 @@ function ReviewContent() {
 
           {/* Estado: analisando (profunda) */}
           {isDeepAnalyzing && (
-            <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950/80 p-5 shadow-lg backdrop-blur-sm">
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-neutral-400">
+            <div className="flex flex-1 flex-col justify-center p-6">
+              <p className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-neutral-400">
                 Análise profunda em andamento...
               </p>
               <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-800">
@@ -283,47 +282,51 @@ function ReviewContent() {
 
           {/* Estado: sem análise */}
           {!activeResult && !isDeepAnalyzing && (
-            <button
-              onClick={() => setDeepAnalysisEnabled(true)}
-              className="shrink-0 w-full rounded-xl py-4 text-sm font-black tracking-wide shadow-lg transition-all hover:opacity-90 md:text-base"
-              style={{ backgroundColor: '#6B8F71', color: '#000' }}
-            >
-              Começar Análise Profunda (Depth 10)
-            </button>
+            <div className="flex flex-1 flex-col justify-center p-6">
+              <button
+                onClick={() => setDeepAnalysisEnabled(true)}
+                className="w-full rounded-xl py-4 text-sm font-black tracking-wide shadow-lg transition-all hover:opacity-90 md:text-base"
+                style={{ backgroundColor: '#6B8F71', color: '#000' }}
+              >
+                Começar Análise Profunda (Depth 10)
+              </button>
+            </div>
           )}
 
           {/* Estado: análise disponível */}
           {activeResult && !isDeepAnalyzing && (
             <>
-              {/* 2. Gráfico (Mantive a altura de 100px para não esmagar a tela) */}
+              {/* 2. Gráfico (Sem bordas arredondadas próprias, usa a divisória inferior) */}
               {graphScores.length > 0 && (
-                <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950/80 p-4 shadow-lg backdrop-blur-sm">
-                  <p className="mb-3 text-xs font-bold uppercase tracking-widest text-neutral-500">Vantagem</p>
+                <div className="shrink-0 border-b border-neutral-800/60 p-4">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-widest text-neutral-500">Vantagem</p>
                   <AdvantageGraph
                     scores={graphScores}
                     currentIndex={currentIndex}
                     onMoveClick={goTo}
-                    height={100} 
+                    height={80} 
                   />
                 </div>
               )}
 
-              {/* 3. Resumo de Precisão (Expandido proporcionalmente com fontes maiores) */}
-              <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950/80 p-5 shadow-lg backdrop-blur-sm">
+              {/* 3. Resumo de Precisão */}
+              <div className="shrink-0 border-b border-neutral-800/60 p-4">
                 <MoveSummary
                   evaluations={activeResult.evaluations}
                   accuracy={playerAccuracy ?? activeResult.accuracy}
-                  compact={false} /* Desativei compact para os textos ficarem maiores naturalmente */
+                  compact={true} /* Compacto para salvar espaço vertical */
                 />
               </div>
 
-              {/* 4. Lista de jogadas — flex-1 (esticar), scroll interno. Aumentei a fonte para legibilidade */}
-              <div className="flex min-h-[150px] flex-1 flex-col overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950/80 shadow-lg backdrop-blur-sm">
-                <p className="shrink-0 border-b border-neutral-800/50 px-5 pb-2 pt-4 text-xs font-bold uppercase tracking-widest text-neutral-500">
-                  Jogadas
-                </p>
-                <div className="flex-1 overflow-y-auto px-5 py-3" style={{ scrollbarWidth: 'thin' }}>
-                  <div className="flex flex-col gap-1 text-sm font-mono">
+              {/* 4. Lista de jogadas — flex-1 (esticar ao máximo), scroll interno */}
+              <div className="flex min-h-0 flex-1 flex-col bg-neutral-900/20">
+                <div className="shrink-0 bg-neutral-900/50 px-5 py-2">
+                  <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                    Jogadas
+                  </p>
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-2" style={{ scrollbarWidth: 'thin' }}>
+                  <div className="flex flex-col gap-0.5 text-sm font-mono">
                     {moves.reduce<{ white: GameMove; black: GameMove | null; wIdx: number; bIdx: number | null }[]>((rows, move, i) => {
                       if (i % 2 === 0) rows.push({ white: move, black: null, wIdx: i + 1, bIdx: null })
                       else { rows[rows.length - 1].black = move; rows[rows.length - 1].bIdx = i + 1 }
@@ -336,11 +339,11 @@ function ReviewContent() {
                       const showWBadge = wEval && row.white.color === savedGame.playerColor && NOTABLE.has(wEval.classification)
                       const showBBadge = bEval && row.black?.color === savedGame.playerColor && NOTABLE.has(bEval.classification)
                       return (
-                        <div key={rowIdx} className="grid items-center gap-2" style={{ gridTemplateColumns: '36px 1fr 1fr' }}>
+                        <div key={rowIdx} className="grid items-center gap-2 py-0.5 border-b border-neutral-800/30 last:border-0" style={{ gridTemplateColumns: '36px 1fr 1fr' }}>
                           <span className="font-bold text-neutral-600">{rowIdx + 1}.</span>
                           <button
                             onClick={() => goTo(row.wIdx)}
-                            className="flex items-center gap-2 rounded px-2.5 py-1.5 text-left transition-colors hover:bg-neutral-800"
+                            className="flex items-center gap-2 rounded px-2.5 py-1 text-left transition-colors hover:bg-neutral-800"
                             style={{ background: wActive ? '#EE964B14' : undefined, color: wActive ? '#EE964B' : '#e5e7eb' }}
                           >
                             {row.white.san}
@@ -349,7 +352,7 @@ function ReviewContent() {
                           {row.black ? (
                             <button
                               onClick={() => goTo(row.bIdx!)}
-                              className="flex items-center gap-2 rounded px-2.5 py-1.5 text-left transition-colors hover:bg-neutral-800"
+                              className="flex items-center gap-2 rounded px-2.5 py-1 text-left transition-colors hover:bg-neutral-800"
                               style={{ background: bActive ? '#EE964B14' : undefined, color: bActive ? '#EE964B' : '#9ca3af' }}
                             >
                               {row.black.san}
@@ -365,35 +368,36 @@ function ReviewContent() {
                 </div>
               </div>
 
-              {/* 5. Botões de ação (Fundos sólidos e coloridos para visibilidade) */}
-              <div className="mt-1 flex shrink-0 flex-col gap-2">
-                <button
-                  onClick={() => {
-                    if (bestMove) clearBestMove()
-                    else queryBestMove(currentFen)
-                  }}
-                  disabled={isBestMoveLoading}
-                  className="w-full rounded-xl bg-neutral-800 py-3.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-neutral-700 disabled:opacity-50"
-                >
-                  {isBestMoveLoading ? 'Calculando...' : bestMove ? 'Limpar lance' : 'Ver melhor lance ⚡'}
-                </button>
-                
-                {cachedResult && !deepReady && (
+              {/* 5. Botões de ação (Rodapé fixo do painel unificado) */}
+              <div className="shrink-0 border-t border-neutral-800/60 bg-neutral-900/40 p-4">
+                <div className="flex flex-col gap-2">
                   <button
-                    onClick={() => setDeepAnalysisEnabled(true)}
-                    className="w-full rounded-xl border-2 border-[#EE964B]/30 bg-[#EE964B]/10 py-3.5 text-sm font-bold text-[#EE964B] shadow-md transition-colors hover:bg-[#EE964B]/20"
+                    onClick={() => {
+                      if (bestMove) clearBestMove()
+                      else queryBestMove(currentFen)
+                    }}
+                    disabled={isBestMoveLoading}
+                    className="w-full rounded-lg bg-neutral-800 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-neutral-700 disabled:opacity-50"
                   >
-                    Re-analisar com depth 10
+                    {isBestMoveLoading ? 'Calculando...' : bestMove ? 'Limpar lance' : 'Ver melhor lance ⚡'}
                   </button>
-                )}
-                
-                {/* Envolvendo o botão do PDF num card sólido para visibilidade */}
-                <div className="w-full rounded-xl bg-neutral-900 shadow-md transition-opacity hover:opacity-80">
-                  <PdfExportButton
-                    savedGame={savedGame}
-                    result={activeResult}
-                    playerAccuracy={playerAccuracy ?? activeResult.accuracy}
-                  />
+                  
+                  {cachedResult && !deepReady && (
+                    <button
+                      onClick={() => setDeepAnalysisEnabled(true)}
+                      className="w-full rounded-lg border border-[#EE964B]/30 bg-[#EE964B]/10 py-3 text-sm font-bold text-[#EE964B] shadow-md transition-colors hover:bg-[#EE964B]/20"
+                    >
+                      Re-analisar com depth 10
+                    </button>
+                  )}
+                  
+                  <div className="w-full rounded-lg bg-neutral-950 shadow-md transition-opacity hover:opacity-80">
+                    <PdfExportButton
+                      savedGame={savedGame}
+                      result={activeResult}
+                      playerAccuracy={playerAccuracy ?? activeResult.accuracy}
+                    />
+                  </div>
                 </div>
               </div>
             </>
