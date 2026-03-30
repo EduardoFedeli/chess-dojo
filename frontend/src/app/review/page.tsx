@@ -85,16 +85,18 @@ function ReviewContent() {
 
   useEffect(() => {
     function calculateOptimalBoardSize() {
-      // 100vh - paddings verticais e botões
-      const maxAvailableHeight = window.innerHeight - 138;
-      // 100vw - paddings, painel direito (480px), gaps e barra de vantagem
-      const maxAvailableWidth = window.innerWidth - 612;
-
-      // Escolhe o menor gargalo para garantir que nada estoure na tela
-      const optimalSize = Math.min(maxAvailableHeight, maxAvailableWidth, 840);
-
-      // Limita a um tamanho mínimo razoável
-      setBoardSize(Math.max(optimalSize, 300));
+      const isMobile = window.innerWidth < 768;
+      
+      if (isMobile) {
+        // Descontamos 32px (paddings da tela) + 40px (espaço da barra de vantagem e do gap)
+        // Assim o tabuleiro + barra de vantagem cabem perfeitamente centralizados!
+        setBoardSize(window.innerWidth - 72);
+      } else {
+        const maxAvailableHeight = window.innerHeight - 138;
+        const maxAvailableWidth = window.innerWidth - 612;
+        const optimalSize = Math.min(maxAvailableHeight, maxAvailableWidth, 840);
+        setBoardSize(Math.max(optimalSize, 300));
+      }
     }
 
     calculateOptimalBoardSize();
@@ -220,7 +222,9 @@ function ReviewContent() {
       : `${currentScore > 0 ? "+" : ""}${(currentScore / 100).toFixed(1)}`;
 
   return (
-    <main className="h-[100dvh] w-screen text-neutral-200 overflow-x-hidden p-2 md:flex md:items-center md:justify-center md:p-6 md:overflow-hidden relative">
+    // 1. MAIN: min-h no mobile (permite scroll) e h-[100dvh] fixo no desktop (md:h-[100dvh])
+    <main className="min-h-[100dvh] md:h-[100dvh] w-screen text-neutral-200 overflow-x-hidden p-2 md:flex md:items-center md:justify-center md:p-6 md:overflow-hidden relative">
+      
       {/* Botão voltar (Fixo no topo esquerdo) */}
       <div className="mb-4 w-full z-10 md:absolute md:top-6 md:left-6 md:mb-0 md:w-auto">
         <button
@@ -231,10 +235,10 @@ function ReviewContent() {
         </button>
       </div>
 
-      {/* Container Central: O ITEMS-STRETCH garante que os dois lados tenham a MESMA altura */}
-      <div className="mx-auto flex w-full max-w-[500px] flex-col gap-4 md:max-w-none md:w-auto md:flex-row md:items-stretch md:justify-center md:gap-6 h-full py-4 md:py-0">
+      {/* 2. CONTAINER CENTRAL: h-full apenas no Desktop (md:h-full) para não espremer o mobile */}
+      <div className="mx-auto flex w-full max-w-[500px] flex-col gap-4 md:max-w-none md:w-auto md:flex-row md:items-stretch md:justify-center md:gap-6 md:h-full py-4 md:py-0">
         {/* COLUNA ESQUERDA: Barra de vantagem + Tabuleiro + Controles */}
-        <div className="flex shrink-0 gap-2 md:gap-4 md:items-start h-fit md:my-auto">
+        <div className="flex justify-center shrink-0 gap-2 md:gap-4 md:items-start h-fit md:my-auto">
           {/* Barra de vantagem */}
           {graphScores.length > 0 && (
             <div className="shrink-0" style={{ height: boardSize }}>
@@ -287,7 +291,7 @@ function ReviewContent() {
         </div>
 
         {/* COLUNA DIREITA UNIFICADA: Vai preencher 100% da altura da coluna esquerda */}
-        <div className="flex w-full flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-md md:w-[480px] md:shrink-0 h-full">
+        <div className="flex w-full flex-col overflow-hidden rounded-xl border border-neutral-800 bg-[#0a0a0a]/95 shadow-2xl backdrop-blur-md md:w-[480px] shrink-0 md:h-full">
           {/* 1. Cabeçalho (Em duas linhas: Título em cima, Dados embaixo) */}
           <div className="shrink-0 border-b border-neutral-800/60 px-5 py-4">
             <div className="flex flex-col gap-2">

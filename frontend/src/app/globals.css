@@ -185,3 +185,41 @@
     grid-row: 1 / 3;
   }
 }
+
+
+@layer utilities {
+  /* --- 1. Keyframes de Animação --- */
+
+  /* Gira a borda viva infinitamente */
+  @keyframes spin-border {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Move o gradiente de partículas no fundo */
+  @keyframes move-background {
+    0% { background-position: 0px 0px; }
+    100% { background-position: 500px 500px; }
+  }
+
+  /* --- 2. Classes Utilitárias do AAA Cards --- */
+
+  /* Container da borda viva. Requer que o pai seja overflow-hidden e relative */
+  .aaa-border-container {
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* O gradiente cônico que gira atrás do card para criar o rastro */
+  .aaa-border-spinner {
+    animation: spin-border 6s linear infinite;
+  }
+
+  /* Fundo de Partículas sutil. Cor baseada no accent_color do JS */
+  .aaa-background-particles {
+    opacity: 0.15;
+    animation: move-background 15s linear infinite;
+    /* Imagem baseada no gradiente cônico gerado dinamicamente no JS */
+  }
+}

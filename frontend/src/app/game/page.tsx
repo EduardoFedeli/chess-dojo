@@ -63,6 +63,79 @@ const BOARD_THEMES: Record<string, { label: string; theme: BoardTheme }> = {
 const THEME_STORAGE_KEY = 'chess-dojo:board-theme'
 const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
+// --- INÍCIO: LÓGICA DE PEÇAS CAPTURADAS ---
+const PIECE_UNICODE: Record<string, { white: string; black: string }> = {
+  p: { white: '♙', black: '♟' },
+  n: { white: '♘', black: '♞' },
+  b: { white: '♗', black: '♝' },
+  r: { white: '♖', black: '♜' },
+  q: { white: '♕', black: '♛' },
+}
+
+const PIECE_VALUES: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9 }
+const INITIAL_COUNTS: Record<string, number> = { p: 8, n: 2, b: 2, r: 2, q: 1 }
+
+function calculateCaptures(fen: string) {
+  const boardStr = fen.split(' ')[0]
+  const counts = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } }
+
+  for (const char of boardStr) {
+    if (char >= 'a' && char <= 'z') counts.b[char as keyof typeof counts.b]++
+    else if (char >= 'A' && char <= 'Z') counts.w[char.toLowerCase() as keyof typeof counts.w]++
+  }
+
+  const capturedByWhite: string[] = [] 
+  const capturedByBlack: string[] = [] 
+  let whiteScore = 0
+  let blackScore = 0
+
+  for (const p of Object.keys(PIECE_VALUES)) {
+    const key = p as keyof typeof counts.w
+    const val = PIECE_VALUES[p]
+    
+    for (let i = 0; i < INITIAL_COUNTS[key] - counts.b[key]; i++) capturedByWhite.push(p)
+    for (let i = 0; i < INITIAL_COUNTS[key] - counts.w[key]; i++) capturedByBlack.push(p)
+
+    whiteScore += counts.w[key] * val
+    blackScore += counts.b[key] * val
+  }
+
+  const order = ['p', 'n', 'b', 'r', 'q']
+  capturedByWhite.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+  capturedByBlack.sort((a, b) => order.indexOf(a) - order.indexOf(b))
+
+  const diff = whiteScore - blackScore
+
+  return {
+    capturedByWhite,
+    capturedByBlack,
+    whiteAdvantage: diff > 0 ? diff : 0,
+    blackAdvantage: diff < 0 ? -diff : 0,
+  }
+}
+
+// O componente que desenha a fileira de pecinhas
+function CapturedPiecesRow({ pieces, pieceColor, advantage }: { pieces: string[], pieceColor: 'white'|'black', advantage: number }) {
+  if (pieces.length === 0 && advantage === 0) return null
+  return (
+    <div className="flex items-center gap-1.5 mt-1.5 h-5 overflow-hidden">
+      <div className="flex -space-x-1">
+        {pieces.map((p, i) => (
+          <span 
+            key={i} 
+            className="text-lg leading-none drop-shadow-md"
+            style={{ color: pieceColor === 'white' ? '#e5e7eb' : '#1f2937' }}
+          >
+            {PIECE_UNICODE[p][pieceColor]}
+          </span>
+        ))}
+      </div>
+      {advantage > 0 && <span className="text-xs font-bold text-neutral-400 ml-1">+{advantage}</span>}
+    </div>
+  )
+}
+// --- FIM: LÓGICA DE PEÇAS CAPTURADAS ---
+
 function GameContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -73,24 +146,22 @@ function GameContent() {
   const skillLevel = SKILL_LEVEL[botParam] ?? 2
   const currentBot = BOTS.find(b => b.level === botParam) ?? null
 
-  // Peças capturadas: ordenadas do menor para maior valor (padrão chess.com)
-  const PIECE_ORDER = ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'n', 'n', 'b', 'b', 'r', 'r', 'q'] as const
-  const PIECE_UNICODE: Record<string, { white: string; black: string }> = {
-    p: { white: '♙', black: '♟' },
-    n: { white: '♘', black: '♞' },
-    b: { white: '♗', black: '♝' },
-    r: { white: '♖', black: '♜' },
-    q: { white: '♕', black: '♛' },
-  }
-
   const { fen, makeMove, status, resign, moves } = useGame(colorParam)
+
+  // Ativando o cálculo de capturas em tempo real
+  const captureData = useMemo(() => calculateCaptures(fen), [fen])
+  const playerCaptures  = colorParam === 'white' ? captureData.capturedByWhite : captureData.capturedByBlack
+  const botCaptures     = colorParam === 'white' ? captureData.capturedByBlack : captureData.capturedByWhite
+  const playerAdvantage = colorParam === 'white' ? captureData.whiteAdvantage : captureData.blackAdvantage
+  const botAdvantage    = colorParam === 'white' ? captureData.blackAdvantage : captureData.whiteAdvantage
   const [resignConfirm, setResignConfirm] = useState(false)
 
   const [boardSize, setBoardSize] = useState(500)
   useEffect(() => {
     const isMobile = window.innerWidth < 768
     if (isMobile) {
-      setBoardSize(Math.min(window.innerWidth - 16, 480))
+      // Desconta exatamente 32px (que é o padding p-4 do container)
+      setBoardSize(window.innerWidth - 32)
     } else {
       setBoardSize(Math.min(window.innerHeight - 120, 700))
     }
@@ -211,14 +282,31 @@ function GameContent() {
   }, [moves]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <main
-      className="relative flex items-center justify-center p-4 md:h-screen md:overflow-hidden"
-    >
+    <main className="relative flex min-h-[100dvh] w-screen flex-col items-center justify-center overflow-x-hidden overflow-y-auto p-4 md:h-[100dvh] md:flex-row md:overflow-hidden">
       {/* Wrapper: tabuleiro + painel lado a lado no desktop, coluna no mobile */}
-      <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6 w-full md:w-auto">
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-4 md:gap-6 w-full md:w-auto">
 
         {/* Coluna esquerda: tabuleiro + controles */}
-        <div className="flex flex-col gap-4 mx-auto md:mx-0" style={{ width: boardSize, flexShrink: 0 }}>
+        <div className="flex flex-col gap-2 md:gap-4 mx-auto md:mx-0" style={{ width: boardSize, flexShrink: 0 }}>
+          
+          {/* --- HEADER DO BOT (VISÍVEL APENAS NO MOBILE) --- */}
+          {currentBot && (
+            <div className="flex flex-col md:hidden px-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-white">⚔ {currentBot.name}</span>
+                <span className="text-[10px] font-bold text-neutral-500 bg-neutral-900 px-1.5 py-0.5 rounded">
+                  {currentBot.rating}
+                </span>
+              </div>
+              <CapturedPiecesRow 
+                pieces={botCaptures} 
+                pieceColor={colorParam === 'white' ? 'white' : 'black'} 
+                advantage={botAdvantage} 
+              />
+            </div>
+          )}
+
+          {/* TABULEIRO */}
           <div style={{ width: boardSize, height: boardSize }}>
             <ChessBoard
               fen={fen}
@@ -235,9 +323,24 @@ function GameContent() {
             />
           </div>
 
-          {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
-          <div className="flex items-center justify-between">
+          {/* --- HEADER DO JOGADOR (VISÍVEL APENAS NO MOBILE) --- */}
+          <div className="flex flex-col md:hidden px-1">
             <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-white">♟ Você</span>
+            </div>
+            <CapturedPiecesRow 
+              pieces={playerCaptures} 
+              pieceColor={colorParam === 'white' ? 'black' : 'white'} 
+              advantage={playerAdvantage} 
+            />
+          </div>
+
+          {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
+
+          {/* Linha inferior: seletor de tema (esquerda) + desistir (direita) */}
+          {/* Usamos flex-wrap para que, se apertar muito, o botão de desistir vá para baixo */}
+          <div className="flex flex-wrap items-center justify-between gap-y-3 mt-1">
+            <div className="flex flex-wrap items-center gap-2">
               {Object.entries(BOARD_THEMES).map(([key, { label, theme }]) => {
                 const isActive = activeTheme === key
                 return (
@@ -259,7 +362,6 @@ function GameContent() {
                 onClick={() => setSettingsOpen(true)}
                 className="rounded-md border border-neutral-700 p-1 text-neutral-400 transition-colors hover:border-neutral-500 hover:text-white"
                 title="Configurações"
-                aria-label="Abrir configurações"
               >
                 <Settings size={14} />
               </button>
@@ -267,17 +369,17 @@ function GameContent() {
 
             {!isGameOver && (
               resignConfirm ? (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-neutral-400">Tem certeza?</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs md:text-sm text-neutral-400">Certeza?</span>
                   <button
                     onClick={() => { resign(); setResignConfirm(false) }}
-                    className="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+                    className="rounded-lg bg-red-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 md:px-4 md:py-2 md:text-sm"
                   >
                     Sim
                   </button>
                   <button
                     onClick={() => setResignConfirm(false)}
-                    className="rounded-lg border border-neutral-600 px-4 py-2 text-sm font-semibold text-neutral-300 hover:border-neutral-400 hover:text-white"
+                    className="rounded-lg border border-neutral-600 px-3 py-1.5 text-xs font-semibold text-neutral-300 hover:border-neutral-400 hover:text-white md:px-4 md:py-2 md:text-sm"
                   >
                     Não
                   </button>
@@ -285,7 +387,7 @@ function GameContent() {
               ) : (
                 <button
                   onClick={() => setResignConfirm(true)}
-                  className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:border-red-700 hover:text-red-400 transition-colors"
+                  className="rounded-lg border border-neutral-700 px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:border-red-700 hover:text-red-400 md:px-4 md:py-2 md:text-sm"
                 >
                   Desistir
                 </button>
@@ -294,24 +396,51 @@ function GameContent() {
           </div>
         </div>
 
-        {/* Coluna direita: bot info + histórico */}
-        <div className="flex flex-col gap-2 w-full md:w-auto md:flex-shrink-0" style={{ height: boardSize }}>
+        {/* Coluna direita: bot info + histórico + player info */}
+        <div className="hidden md:flex flex-col gap-3 w-full md:w-auto md:flex-shrink-0" style={{ height: boardSize }}>
+          
+          {/* Header do Bot (Em cima) */}
           {currentBot && (
-            <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2">
-              <span className="text-sm font-semibold text-white">⚔ {currentBot.name}</span>
-              <span className="ml-2 text-xs text-neutral-500">{currentBot.rating} ELO</span>
+            <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-white">⚔ {currentBot.name}</span>
+                <span className="text-xs font-bold text-neutral-500 bg-neutral-900 px-1.5 py-0.5 rounded">
+                  {currentBot.rating} ELO
+                </span>
+              </div>
+              <CapturedPiecesRow 
+                pieces={botCaptures} 
+                pieceColor={colorParam === 'white' ? 'white' : 'black'} 
+                advantage={botAdvantage} 
+              />
             </div>
           )}
-          <div className="flex-1 min-h-0">
+
+          {/* Histórico de Jogadas (No meio) */}
+          <div className="flex-1 min-h-0 rounded-xl overflow-hidden shadow-sm border border-neutral-800 bg-neutral-950">
             <MoveHistory moves={moves} />
           </div>
+
+          {/* Header do Jogador (Embaixo) */}
+          <div className="shrink-0 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-white">♟ Você</span>
+            </div>
+            <CapturedPiecesRow 
+              pieces={playerCaptures} 
+              pieceColor={colorParam === 'white' ? 'black' : 'white'} 
+              advantage={playerAdvantage} 
+            />
+          </div>
+
         </div>
       </div>
 
       {/* Overlay de fim de jogo */}
       {overlayVisible && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-5 rounded-2xl bg-neutral-900 px-10 py-8 text-center shadow-2xl w-80">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+          {/* w-[92%] para caber bem no mobile, max-w-md no mobile e max-w-lg no PC para ficar grandão */}
+          <div className="flex flex-col items-center gap-5 md:gap-6 rounded-2xl bg-neutral-900 px-6 py-8 md:px-12 md:py-10 text-center shadow-2xl w-[92%] max-w-md md:max-w-lg">
 
             {/* Resultado */}
             <p className="text-2xl font-bold text-white">
@@ -409,7 +538,7 @@ function GameContent() {
       {/* Modal de configurações */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent
-          className="sm:max-w-sm"
+          className="w-[92%] sm:max-w-md md:max-w-lg rounded-xl"
           style={{ background: '#111', border: '1px solid #2a2a2a', color: '#e5e7eb' }}
         >
           <DialogHeader>
@@ -469,7 +598,7 @@ function GameContent() {
             <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
               Estilo de peças
             </p>
-            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
+            <div className="flex flex-wrap gap-2 max-h-64 md:max-h-80 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
               {Object.entries(PIECE_THEMES).map(([key, label]) => {
                 const isActive = activePieceTheme === key
                 return (
