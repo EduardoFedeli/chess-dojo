@@ -91,7 +91,3 @@ seguindo o padrão: feat(escopo): descrição"
 
 Este projeto usa Next.js 16 com React 19 — versões com breaking changes em relação ao que pode estar no training data. Consultar `node_modules/next/dist/docs/` em caso de dúvida sobre APIs ou convenções.
 
-## Contexto do desenvolvedor
-
-Desenvolvedor em transição para full stack. Priorizar clareza e boas práticas acima de performance prematura. Sempre explicar o porquê das decisões antes do como.
-
